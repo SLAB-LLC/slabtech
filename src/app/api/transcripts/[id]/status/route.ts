@@ -181,7 +181,7 @@ export async function GET(
         const isConstraintError = lockError.message?.includes('check constraint') ||
                                   lockError.message?.includes('violates')
         const userMessage = isConstraintError
-          ? "Database migration not applied. Run async-processing-v2-migration.sql in your Supabase SQL editor."
+          ? "Database migration not applied. Run sql/async-processing-v2-migration.sql in your Supabase SQL editor."
           : `Failed to start processing: ${lockError.message}`
         await sr
           .from('transcripts')
