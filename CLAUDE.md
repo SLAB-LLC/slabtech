@@ -52,9 +52,9 @@ src/app/
 ### Important Files
 
 - `src/app/api/process-audio/route.ts` - Core transcription logic, AssemblyAI integration
-- `src/utils/supabase/` - Supabase client utilities (client.ts, server.ts, middleware.ts)
+- `src/utils/supabase/` - Supabase client utilities (client.ts, server.ts)
 - `src/middleware.ts` - Auth session management, excludes `/api/process-audio` from auth
-- `supabase-schema.sql` - Database schema with RLS policies
+- `sql/` - Hand-run Supabase SQL migrations (schema, RLS policies); `sql/supabase-schema-v2.sql` is the base schema
 
 ### Path Alias
 

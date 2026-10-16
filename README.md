@@ -61,7 +61,7 @@ ASSEMBLYAI_API_KEY=your-assemblyai-api-key
 
 1. Go to your Supabase project dashboard
 2. Navigate to **SQL Editor**
-3. Copy and paste the contents of `supabase-schema.sql`
+3. Copy and paste the contents of `sql/supabase-schema-v2.sql`
 4. Run the SQL to create the tables and policies
 
 ### 4. Configure Authentication
@@ -78,7 +78,7 @@ ASSEMBLYAI_API_KEY=your-assemblyai-api-key
 1. Go to **Storage** in Supabase Dashboard
 2. Create a new bucket named `call-recordings`
 3. Make it **private** (not public)
-4. The storage policies are commented in `supabase-schema.sql` - you can run them in the SQL Editor
+4. Add storage policies for the bucket in the SQL Editor
 
 ### 6. Set Up AssemblyAI
 
@@ -122,10 +122,9 @@ slab-voice/
 │   ├── utils/
 │   │   └── supabase/
 │   │       ├── client.ts         # Browser Supabase client
-│   │       ├── server.ts         # Server Supabase client
-│   │       └── middleware.ts     # Middleware utilities
+│   │       └── server.ts         # Server Supabase client
 │   └── middleware.ts             # Next.js middleware
-├── supabase-schema.sql           # Database schema
+├── sql/                          # Supabase SQL migrations
 └── package.json
 ```
 
