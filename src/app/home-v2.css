@@ -211,7 +211,23 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 
 /* ---------- every door (industries) ---------- */
 .slab-v2 .doors{border-top:1px solid var(--line);}
-.slab-v2 .doors .h2{max-width:14ch;}
+.slab-v2 .doors .h2{max-width:12ch;}
+/* black-and-white rep on the left, fading into the page like the hero skeleton */
+.slab-v2 .doors-top{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;}
+.slab-v2 .door-shot{position:relative;margin:-40px 0 -40px -48px;}
+.slab-v2 .door-shot::before{
+  content:"";position:absolute;inset:10% 0 10% 20%;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,90,20,.28) 0%,transparent 66%);filter:blur(30px);
+}
+.slab-v2 .door-shot img{
+  position:relative;display:block;width:100%;filter:grayscale(1) contrast(1.08);
+  -webkit-mask-image:radial-gradient(ellipse 56% 58% at 50% 46%,#000 38%,transparent 100%);
+          mask-image:radial-gradient(ellipse 56% 58% at 50% 46%,#000 38%,transparent 100%);
+}
+@media(max-width:900px){
+  .slab-v2 .doors-top{grid-template-columns:1fr;gap:0;}
+  .slab-v2 .door-shot{margin:-30px -20px -60px;}
+}
 .slab-v2 .doors .h2 em{font-style:normal;color:var(--orange);}
 .slab-v2 .doors-sub{color:var(--bone-dim);max-width:58ch;font-size:clamp(16px,1.8vw,19px);}
 .slab-v2 .doors-sub b{color:var(--bone);}
@@ -254,6 +270,41 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 @media(max-width:900px){.slab-v2 .tapes-grid{grid-template-columns:1fr;gap:38px;}}
 .slab-v2 .tapes-sub{color:var(--bone-dim);max-width:48ch;font-size:15.5px;margin-bottom:30px;}
 .slab-v2 .tapes-sub b{color:var(--bone);}
+
+/* Marshall vs. the chatbot: a two-slide track with a switch above it */
+.slab-v2 .vs-bar{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:40px;}
+.slab-v2 .vs-switch{position:relative;display:inline-grid;grid-template-columns:1fr 1fr;border:1px solid var(--bone);}
+.slab-v2 .vs-switch button{
+  position:relative;z-index:1;background:none;border:none;cursor:pointer;
+  font:700 13px/1 var(--mono);letter-spacing:.18em;color:var(--bone);padding:13px 22px;
+  transition:color .3s;
+}
+.slab-v2 .vs-switch button.on{color:#000;}
+.slab-v2 .vs-thumb{
+  position:absolute;top:0;bottom:0;left:0;width:50%;background:var(--orange);
+  transition:transform .45s cubic-bezier(.7,0,.2,1);
+}
+.slab-v2 .vs-hint{font-size:12px;letter-spacing:.2em;color:var(--bone-dim);}
+.slab-v2 .vs-track{
+  display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;
+  overscroll-behavior-x:contain;
+}
+.slab-v2 .vs-track::-webkit-scrollbar{display:none;}
+.slab-v2 .vs-slide .tapes-grid>*,.slab-v2 .vs-slide .tapes-right>*{min-width:0;}
+.slab-v2 .vs-slide{flex:0 0 100%;min-width:0;overflow-x:clip;scroll-snap-align:start;scroll-snap-stop:always;}
+/* the robot side runs cold: steel instead of orange */
+.slab-v2 .vs-bot .mug{border-color:#7d8590;}
+.slab-v2 .vs-bot .mug figcaption{background:#7d8590;}
+.slab-v2 .vs-bot .h2 em,.slab-v2 .vs-bot .record-stack .figure{color:#7d8590;}
+.slab-v2 .vs-bot .stamp{border-color:#7d8590;color:#7d8590;transform:rotate(3deg);}
+.slab-v2 .vs-bot .record-stack .rmeta b{color:#7d8590;}
+.slab-v2 .flatline{position:relative;height:96px;margin:4px 0 30px;}
+.slab-v2 .flatline i{position:absolute;left:0;right:0;top:50%;height:3px;background:#7d8590;}
+.slab-v2 .flatline::after{
+  content:"";position:absolute;top:calc(50% - 6px);left:0;width:15px;height:15px;border-radius:50%;
+  background:#7d8590;box-shadow:0 0 14px #7d8590;animation:slab-flat 3.2s linear infinite;
+}
+@keyframes slab-flat{from{left:0}to{left:calc(100% - 15px)}}
 
 /* the mug shot */
 .slab-v2 .mug{position:relative;border:2px solid var(--orange);}
@@ -477,7 +528,7 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 @media (prefers-reduced-motion: reduce){
   html.slab-v2-html{scroll-behavior:auto;}
   .slab-v2 .grain,.slab-v2 .ticker-inner,.slab-v2 .wave i,.slab-v2 .eq i,
-  .slab-v2 .specter .hum,.slab-v2 .specter img,
+  .slab-v2 .specter .hum,.slab-v2 .specter img,.slab-v2 .flatline::after,
   .slab-v2 .prize .float-obj,.slab-v2 .prize .shadow{animation:none!important;}
   .slab-v2 .reveal{clip-path:none!important;}
 }

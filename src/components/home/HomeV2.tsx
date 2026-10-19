@@ -94,6 +94,13 @@ export default function HomeV2() {
   // ---- apply form ---------------------------------------------------------
   const [role, setRole] = useState<Role>('rep');
   const [industry, setIndustry] = useState('Pest');
+  /** Marshall vs. the chatbot: 0 = the record, 1 = the robot. */
+  const [vsSlide, setVsSlide] = useState(0);
+  const vsRef = useRef<HTMLDivElement>(null);
+  const goToSlide = (i: number) => {
+    const track = vsRef.current;
+    if (track) track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+  };
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -530,12 +537,20 @@ export default function HomeV2() {
         </section>
 
         <section className="doors pad" id="doors">
-          <span className="kicker">EVERY DOOR</span>
-          <h2 className="h2 reveal">Different product. <em>Same door.</em></h2>
-          <p className="doors-sub">
-            Bugs, shingles, panels or a fiber line — the homeowner still opens the door the same
-            way. SLAB trains the part that travels: <b>the opener, the objection, the close.</b>
-          </p>
+          <div className="doors-top">
+            <figure className="door-shot" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/v2/door-knock.jpg" alt="" />
+            </figure>
+            <div className="doors-copy">
+              <span className="kicker">EVERY DOOR</span>
+              <h2 className="h2 reveal">Built for <em>every industry.</em></h2>
+              <p className="doors-sub">
+                Bugs, shingles, panels or a fiber line — the homeowner still opens the door the same
+                way. SLAB trains the part that travels: <b>the opener, the objection, the close.</b>
+              </p>
+            </div>
+          </div>
           <div className="doors-grid">
             {INDUSTRIES.map((ind) => (
               <div className="door-card" key={ind.label}>
@@ -549,6 +564,29 @@ export default function HomeV2() {
 
         <section className="tapes pad" id="tapes">
           <span className="kicker">THE SOURCE MATERIAL</span>
+          <div className="vs-bar">
+            <div className="vs-switch" role="tablist" aria-label="Who trains your reps">
+              <span className="vs-thumb" style={{ transform: `translateX(${vsSlide * 100}%)` }} aria-hidden="true" />
+              {['THE RECORD', 'THE ROBOT'].map((label, i) => (
+                <button
+                  key={label} type="button" role="tab" aria-selected={vsSlide === i}
+                  className={vsSlide === i ? 'on' : ''} onClick={() => goToSlide(i)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <span className="vs-hint">{vsSlide === 0 ? '// SLIDE TO MEET THE COMPETITION →' : '// ← BACK TO THE REAL THING'}</span>
+          </div>
+          <div
+            className="vs-track"
+            ref={vsRef}
+            onScroll={(e) => {
+              const t = e.currentTarget;
+              setVsSlide(Math.round(t.scrollLeft / Math.max(t.clientWidth, 1)));
+            }}
+          >
+          <div className="vs-slide" aria-hidden={vsSlide !== 0 || undefined}>
           <div className="tapes-grid">
             <figure className="mug">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -574,6 +612,37 @@ export default function HomeV2() {
                 <div className="rmeta">$1,523,680 · 2024 · <b>THE RECORD</b></div>
               </div>
             </div>
+          </div>
+          </div>
+
+          <div className="vs-slide vs-bot" aria-hidden={vsSlide !== 1 || undefined}>
+          <div className="tapes-grid">
+            <figure className="mug">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/v2/chatbot.jpg" alt="ChatBot 3000, a robot parody of Marshall's poster: $0.00, 0 accounts" />
+              <figcaption>CHATBOT 3000 · THE INDUSTRY STANDARD</figcaption>
+            </figure>
+            <div className="tapes-right">
+              <div className="tapes-copy">
+                <h2 className="h2">Or we could&apos;ve used <em>a robot.</em></h2>
+                <p className="tapes-sub">
+                  That&apos;s what a lot of training companies hand your reps: <b>an AI chatbot that
+                  has never knocked a door.</b> Never heard a dog lose it behind the screen. Never
+                  watched a homeowner reach for the handle. It roleplays a script it found on the
+                  internet and calls it training. <b>You can&apos;t learn the sauce from something
+                  that&apos;s never tasted it.</b>
+                </p>
+                <div className="flatline" aria-hidden="true"><i /></div>
+                <span className="stamp">TRAINED ON NOTHING. SOLD NOTHING.</span>
+              </div>
+              <div className="record-stack">
+                <div className="figure">ZERO</div>
+                <div className="rlabel">Accounts sold. Ever.</div>
+                <div className="rmeta">$0.00 · NEVER · <b>THE CHATBOT</b></div>
+              </div>
+            </div>
+          </div>
+          </div>
           </div>
 
           <div className="tracks-head">
