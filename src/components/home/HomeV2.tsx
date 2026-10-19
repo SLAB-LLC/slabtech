@@ -564,19 +564,26 @@ export default function HomeV2() {
 
         <section className="tapes pad" id="tapes">
           <span className="kicker">THE SOURCE MATERIAL</span>
-          <div className="vs-bar">
-            <div className="vs-switch" role="tablist" aria-label="Who trains your reps">
-              <span className="vs-thumb" style={{ transform: `translateX(${vsSlide * 100}%)` }} aria-hidden="true" />
-              {['THE RECORD', 'THE ROBOT'].map((label, i) => (
+          <div className="vs-bar" role="tablist" aria-label="Who trains your reps">
+            {[
+              { label: 'US', sub: 'TRAINED BY THE RECORD HOLDER' },
+              { label: 'OUR COMPETITORS', sub: 'TRAINED BY A CHATBOT' },
+            ].map((side, i) => (
+              <Fragment key={side.label}>
+                {i === 1 && <span className="vs-badge" aria-hidden="true">VS</span>}
                 <button
-                  key={label} type="button" role="tab" aria-selected={vsSlide === i}
-                  className={vsSlide === i ? 'on' : ''} onClick={() => goToSlide(i)}
+                  type="button" role="tab" aria-selected={vsSlide === i}
+                  className={`vs-btn${i === 1 ? ' them' : ''}${vsSlide === i ? ' on' : ''}`}
+                  onClick={() => goToSlide(i)}
                 >
-                  {label}
+                  <span className="vs-label">{side.label}</span>
+                  <span className="vs-sub">{side.sub}</span>
+                  {vsSlide !== i && (
+                    <span className="vs-cta" aria-hidden="true">{i === 1 ? 'SEE THEM →' : '← BACK TO US'}</span>
+                  )}
                 </button>
-              ))}
-            </div>
-            <span className="vs-hint">{vsSlide === 0 ? '// SLIDE TO MEET THE COMPETITION →' : '// ← BACK TO THE REAL THING'}</span>
+              </Fragment>
+            ))}
           </div>
           <div
             className="vs-track"
