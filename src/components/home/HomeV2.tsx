@@ -565,19 +565,15 @@ export default function HomeV2() {
         <section className="tapes pad" id="tapes">
           <span className="kicker">THE SOURCE MATERIAL</span>
           <div className="vs-bar" role="tablist" aria-label="Who trains your reps">
-            {[
-              { label: 'US', sub: 'TRAINED BY THE RECORD HOLDER' },
-              { label: 'OUR COMPETITORS', sub: 'TRAINED BY A CHATBOT' },
-            ].map((side, i) => (
-              <Fragment key={side.label}>
+            {['US', 'OUR COMPETITORS'].map((label, i) => (
+              <Fragment key={label}>
                 {i === 1 && <span className="vs-badge" aria-hidden="true">VS</span>}
                 <button
                   type="button" role="tab" aria-selected={vsSlide === i}
                   className={`vs-btn${i === 1 ? ' them' : ''}${vsSlide === i ? ' on' : ''}`}
                   onClick={() => goToSlide(i)}
                 >
-                  <span className="vs-label">{side.label}</span>
-                  <span className="vs-sub">{side.sub}</span>
+                  <span className="vs-label">{label}</span>
                   {vsSlide !== i && (
                     <span className="vs-cta" aria-hidden="true">{i === 1 ? 'SEE THEM →' : '← BACK TO US'}</span>
                   )}

@@ -283,7 +283,6 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 }
 .slab-v2 .vs-btn.them{align-items:flex-end;text-align:right;border-color:#7d8590;}
 .slab-v2 .vs-label{font-family:var(--display);font-size:clamp(30px,4.4vw,64px);line-height:.9;letter-spacing:.01em;}
-.slab-v2 .vs-sub{font-size:12px;font-weight:700;letter-spacing:.2em;opacity:.8;}
 .slab-v2 .vs-btn.on{background:var(--orange);border-color:var(--orange);color:#000;cursor:default;}
 .slab-v2 .vs-btn.them.on{background:#7d8590;border-color:#7d8590;color:#0b0b0d;}
 /* the side you're not on begs to be clicked */
@@ -324,8 +323,7 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 }
 @media(max-width:700px){
   .slab-v2 .vs-btn{padding:18px 14px;}
-  .slab-v2 .vs-sub{font-size:9.5px;letter-spacing:.12em;}
-  .slab-v2 .vs-label{font-size:26px;}
+    .slab-v2 .vs-label{font-size:26px;}
   .slab-v2 .vs-badge{width:52px;font-size:20px;margin:0 -10px;}
   .slab-v2 .vs-cta{font-size:9.5px;padding:4px 7px;}
 }
