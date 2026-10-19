@@ -62,6 +62,21 @@ const fmt = (s: number) =>
 
 type Role = 'rep' | 'owner' | 'other';
 
+/**
+ * The doors SLAB trains for. The opener, the objection and the close are the
+ * same muscle whatever's on the clipboard — each card names the moment that
+ * makes or breaks a deal in that vertical. The same list drives the apply
+ * form's industry picker (`label` is what gets saved on the lead, matching the
+ * store form's values), so add a vertical here and it shows up in both.
+ */
+const INDUSTRIES = [
+  { label: 'Pest', tag: '// THE SWITCHOVER', line: '"We already have a guy." Flip it before the screen door shuts.' },
+  { label: 'Roofing', tag: '// THE INSPECTION', line: 'Earn the ladder. Get on the roof, then get the signature.' },
+  { label: 'Solar', tag: '// THE BILL', line: 'Get the utility bill out of the drawer and onto the table.' },
+  { label: 'Fiber', tag: '// THE SWITCH', line: '"My internet\'s fine." Make them feel the lag they stopped noticing.' },
+];
+const INDUSTRY_OPTIONS = [...INDUSTRIES.map((i) => i.label), 'Other'];
+
 export default function HomeV2() {
   const rootRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
@@ -78,6 +93,14 @@ export default function HomeV2() {
 
   // ---- apply form ---------------------------------------------------------
   const [role, setRole] = useState<Role>('rep');
+  const [industry, setIndustry] = useState('Pest');
+  /** Marshall vs. the chatbot: 0 = the record, 1 = the robot. */
+  const [vsSlide, setVsSlide] = useState(0);
+  const vsRef = useRef<HTMLDivElement>(null);
+  const goToSlide = (i: number) => {
+    const track = vsRef.current;
+    if (track) track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+  };
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -399,6 +422,7 @@ export default function HomeV2() {
           name: fd.get('name'),
           email: fd.get('email'),
           phone: fd.get('phone'),
+          industry,
           message: fd.get('message'),
           customData: {
             source: 'home-apply',
@@ -433,6 +457,7 @@ export default function HomeV2() {
         </a>
         <nav>
           <a href="#theory">THE THEORY</a>
+          <a href="#doors">EVERY DOOR</a>
           <a href="#tapes">THE SOURCE MATERIAL</a>
           <a href="#system">THE SYSTEM</a>
           <a href="#work">THE WALL</a>
@@ -460,7 +485,7 @@ export default function HomeV2() {
             </h1>
             <p className="hero-sub">
               <b>SLAB</b> (or <b>Sales Lab</b>) is a <b>gamified training lab</b> for door-to-door
-              sales teams. No binders. No dead PowerPoints. Built in the field,{' '}
+              sales teams in <b>pest, roofing, solar and fiber</b>. No binders. No dead PowerPoints. Built in the field,{' '}
               <b>trained off the best of the best.</b>
             </p>
             <div className="hero-ctas">
@@ -472,8 +497,8 @@ export default function HomeV2() {
 
         <div className="ticker" aria-hidden="true">
           <div className="ticker-inner">
-            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; THE SAUCE &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
-            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; THE SAUCE &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
+            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; PEST &nbsp;★&nbsp; ROOFING &nbsp;★&nbsp; SOLAR &nbsp;★&nbsp; FIBER &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
+            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; PEST &nbsp;★&nbsp; ROOFING &nbsp;★&nbsp; SOLAR &nbsp;★&nbsp; FIBER &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
           </div>
         </div>
 
@@ -511,8 +536,60 @@ export default function HomeV2() {
           </p>
         </section>
 
+        <section className="doors pad" id="doors">
+          <div className="doors-top">
+            <figure className="door-shot" aria-hidden="true">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/v2/door-knock.jpg" alt="" />
+            </figure>
+            <div className="doors-copy">
+              <span className="kicker">EVERY DOOR</span>
+              <h2 className="h2 reveal">Built for <em>every industry.</em></h2>
+              <p className="doors-sub">
+                Bugs, shingles, panels or a fiber line — the homeowner still opens the door the same
+                way. SLAB trains the part that travels: <b>the opener, the objection, the close.</b>
+              </p>
+            </div>
+          </div>
+          <div className="doors-grid">
+            {INDUSTRIES.map((ind) => (
+              <div className="door-card" key={ind.label}>
+                <h3>{ind.label}</h3>
+                <div className="who">{ind.tag}</div>
+                <p>{ind.line}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="tapes pad" id="tapes">
           <span className="kicker">THE SOURCE MATERIAL</span>
+          <div className="vs-bar" role="tablist" aria-label="Who trains your reps">
+            {['US', 'OUR COMPETITORS'].map((label, i) => (
+              <Fragment key={label}>
+                {i === 1 && <span className="vs-badge" aria-hidden="true">VS</span>}
+                <button
+                  type="button" role="tab" aria-selected={vsSlide === i}
+                  className={`vs-btn${i === 1 ? ' them' : ''}${vsSlide === i ? ' on' : ''}`}
+                  onClick={() => goToSlide(i)}
+                >
+                  <span className="vs-label">{label}</span>
+                  {vsSlide !== i && (
+                    <span className="vs-cta" aria-hidden="true">{i === 1 ? 'SEE THEM →' : '← BACK TO US'}</span>
+                  )}
+                </button>
+              </Fragment>
+            ))}
+          </div>
+          <div
+            className="vs-track"
+            ref={vsRef}
+            onScroll={(e) => {
+              const t = e.currentTarget;
+              setVsSlide(Math.round(t.scrollLeft / Math.max(t.clientWidth, 1)));
+            }}
+          >
+          <div className="vs-slide" aria-hidden={vsSlide !== 0 || undefined}>
           <div className="tapes-grid">
             <figure className="mug">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -526,7 +603,8 @@ export default function HomeV2() {
                   Instead of some soulless AI chatbot or semi-decent salesman, we wanted{' '}
                   <b>the cream of the crop</b>. So we took <b>the previous record holder</b>, wired
                   him up, and recorded every opener, every objection, every close to get the best
-                  possible training and models.
+                  possible training and models. The product changes from door to door.{' '}
+                  <b>The pattern doesn&apos;t.</b>
                 </p>
                 <div className="wave" aria-hidden="true" ref={waveRef} />
                 <span className="stamp">RAW. UNCUT. FROM THE DOORSTEP.</span>
@@ -537,6 +615,37 @@ export default function HomeV2() {
                 <div className="rmeta">$1,523,680 · 2024 · <b>THE RECORD</b></div>
               </div>
             </div>
+          </div>
+          </div>
+
+          <div className="vs-slide vs-bot" aria-hidden={vsSlide !== 1 || undefined}>
+          <div className="tapes-grid">
+            <figure className="mug">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/v2/chatbot.jpg" alt="ChatBot 3000, a humanoid robot with crossed arms on a parody of Marshall's poster: $0.00, 0 accounts" />
+              <figcaption>CHATBOT 3000 · THE INDUSTRY STANDARD</figcaption>
+            </figure>
+            <div className="tapes-right">
+              <div className="tapes-copy">
+                <h2 className="h2">Or we could&apos;ve used <em>a robot.</em></h2>
+                <p className="tapes-sub">
+                  That&apos;s what a lot of training companies hand your reps: <b>an AI chatbot that
+                  has never knocked a door.</b> Never heard a dog lose it behind the screen. Never
+                  watched a homeowner reach for the handle. It roleplays a script it found on the
+                  internet and calls it training. <b>You can&apos;t learn the sauce from something
+                  that&apos;s never tasted it.</b>
+                </p>
+                <div className="flatline" aria-hidden="true"><i /></div>
+                <span className="stamp">TRAINED ON NOTHING. SOLD NOTHING.</span>
+              </div>
+              <div className="record-stack">
+                <div className="figure">ZERO</div>
+                <div className="rlabel">Accounts sold. Ever.</div>
+                <div className="rmeta">$0.00 · NEVER · <b>THE CHATBOT</b></div>
+              </div>
+            </div>
+          </div>
+          </div>
           </div>
 
           <div className="tracks-head">
@@ -732,7 +841,7 @@ export default function HomeV2() {
           <span className="kicker">THE DOOR</span>
           <h2 className="h2 reveal">Knock.</h2>
           <p className="apply-sub">
-            Rep or owner — tell us who you are and what you&apos;re chasing. We sort every
+            Rep or owner, pest or roofing, solar or fiber — tell us who you are and what you&apos;re chasing. We sort every
             submission and knock back on the ones that fit.
           </p>
 
@@ -743,6 +852,7 @@ export default function HomeV2() {
             </div>
           ) : (
             <form onSubmit={handleApply} autoComplete="on">
+              <div className="seg-label" aria-hidden="true">I AM A</div>
               <div className="seg" role="radiogroup" aria-label="I am a">
                 {(['rep', 'owner', 'other'] as Role[]).map((r) => (
                   <Fragment key={r}>
@@ -751,6 +861,18 @@ export default function HomeV2() {
                       checked={role === r} onChange={() => setRole(r)}
                     />
                     <label htmlFor={`r-${r}`}>{r.toUpperCase()}</label>
+                  </Fragment>
+                ))}
+              </div>
+              <div className="seg-label" aria-hidden="true">MY INDUSTRY</div>
+              <div className="seg" role="radiogroup" aria-label="Industry">
+                {INDUSTRY_OPTIONS.map((opt) => (
+                  <Fragment key={opt}>
+                    <input
+                      type="radio" name="industry" id={`i-${opt}`} value={opt}
+                      checked={industry === opt} onChange={() => setIndustry(opt)}
+                    />
+                    <label htmlFor={`i-${opt}`}>{opt.toUpperCase()}</label>
                   </Fragment>
                 ))}
               </div>
