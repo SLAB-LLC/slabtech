@@ -273,7 +273,7 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 
 /* Marshall vs. the chatbot: a two-slide track with a switch above it */
 .slab-v2 .vs-bar{
-  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:0;margin-bottom:44px;
+  isolation:isolate;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:0;margin-bottom:44px;
 }
 .slab-v2 .vs-btn{align-self:stretch;justify-content:center;
   position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:8px;
@@ -302,6 +302,19 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 .slab-v2 .vs-btn.them .vs-cta{right:18px;}
 .slab-v2 .vs-btn:not(.them) .vs-cta{left:18px;--dir:-1;}
 @keyframes slab-nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(calc(var(--dir,1) * 6px))}}
+/* a soft orange underglow beneath the side you're not on, breathing in and out */
+.slab-v2 .vs-btn::after{
+  content:"";position:absolute;left:8%;right:8%;bottom:-22px;height:26px;border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(244,113,30,.75) 0%,rgba(244,113,30,0) 70%);
+  filter:blur(8px);opacity:0;pointer-events:none;z-index:-1;
+}
+.slab-v2 .vs-btn:not(.on)::after{animation:slab-underglow 2.2s ease-in-out infinite;}
+@keyframes slab-underglow{0%,100%{opacity:.35;transform:scaleX(.9);}50%{opacity:1;transform:scaleX(1.05);}}
+.slab-v2 .vs-badge{animation:slab-badge 2.2s ease-in-out infinite;}
+@keyframes slab-badge{
+  0%,100%{box-shadow:0 0 18px rgba(244,113,30,.25);}
+  50%{box-shadow:0 0 42px rgba(244,113,30,.6);}
+}
 .slab-v2 .vs-badge{
   position:relative;z-index:1;display:grid;place-items:center;
   width:clamp(64px,7vw,92px);aspect-ratio:1;margin:0 -14px;border-radius:50%;
@@ -559,7 +572,7 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 @media (prefers-reduced-motion: reduce){
   html.slab-v2-html{scroll-behavior:auto;}
   .slab-v2 .grain,.slab-v2 .ticker-inner,.slab-v2 .wave i,.slab-v2 .eq i,
-  .slab-v2 .specter .hum,.slab-v2 .specter img,.slab-v2 .flatline::after,.slab-v2 .vs-btn,.slab-v2 .vs-cta,
+  .slab-v2 .specter .hum,.slab-v2 .specter img,.slab-v2 .flatline::after,.slab-v2 .vs-btn,.slab-v2 .vs-cta,.slab-v2 .vs-btn::after,.slab-v2 .vs-badge,
   .slab-v2 .prize .float-obj,.slab-v2 .prize .shadow{animation:none!important;}
   .slab-v2 .reveal{clip-path:none!important;}
 }
