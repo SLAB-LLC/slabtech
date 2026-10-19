@@ -626,7 +626,7 @@ export default function HomeV2() {
           <div className="tapes-grid">
             <figure className="mug">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/v2/chatbot.jpg" alt="ChatBot 3000, a robot parody of Marshall's poster: $0.00, 0 accounts" />
+              <img src="/v2/chatbot.jpg" alt="ChatBot 3000, a humanoid robot with crossed arms on a parody of Marshall's poster: $0.00, 0 accounts" />
               <figcaption>CHATBOT 3000 · THE INDUSTRY STANDARD</figcaption>
             </figure>
             <div className="tapes-right">
