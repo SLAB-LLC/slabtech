@@ -209,6 +209,26 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 }
 .slab-v2 .theory-punch b{color:var(--orange);}
 
+/* ---------- every door (industries) ---------- */
+.slab-v2 .doors{border-top:1px solid var(--line);}
+.slab-v2 .doors .h2{max-width:14ch;}
+.slab-v2 .doors .h2 em{font-style:normal;color:var(--orange);}
+.slab-v2 .doors-sub{color:var(--bone-dim);max-width:58ch;font-size:clamp(16px,1.8vw,19px);}
+.slab-v2 .doors-sub b{color:var(--bone);}
+.slab-v2 .doors-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin-top:56px;
+}
+@media(max-width:1000px){.slab-v2 .doors-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:560px){.slab-v2 .doors-grid{grid-template-columns:1fr;}}
+.slab-v2 .door-card{padding:36px 30px;border-left:1px solid var(--line);border-top:1px solid var(--line);margin:-1px 0 0 -1px;}
+.slab-v2 .door-card h3{
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:clamp(30px,3.2vw,44px);line-height:1;margin-bottom:8px;color:var(--orange);
+}
+.slab-v2 .door-card .who{font-size:12px;letter-spacing:.24em;color:var(--bone-dim);margin-bottom:20px;}
+.slab-v2 .door-card p{font-size:15px;color:var(--bone);}
+.slab-v2 .doors-grid{overflow:hidden;}
+
 /* ---------- tapes / hawkes ---------- */
 .slab-v2 .tapes{background:var(--coal);border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;}
 .slab-v2 .tapes .h2{max-width:13ch;font-size:clamp(32px,4.2vw,60px);}
@@ -406,6 +426,7 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 .slab-v2 .apply .h2{font-size:clamp(64px,14vw,200px);color:var(--orange);}
 .slab-v2 .apply-sub{color:var(--bone-dim);max-width:52ch;margin-bottom:52px;font-size:15.5px;}
 .slab-v2 form{max-width:760px;}
+.slab-v2 .seg-label{font-size:12px;letter-spacing:.22em;color:var(--bone-dim);margin-bottom:12px;}
 .slab-v2 .seg{display:flex;gap:0;margin-bottom:36px;flex-wrap:wrap;}
 .slab-v2 .seg input{position:absolute;opacity:0;pointer-events:none;}
 .slab-v2 .seg label{

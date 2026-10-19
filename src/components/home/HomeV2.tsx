@@ -62,6 +62,21 @@ const fmt = (s: number) =>
 
 type Role = 'rep' | 'owner' | 'other';
 
+/**
+ * The doors SLAB trains for. The opener, the objection and the close are the
+ * same muscle whatever's on the clipboard — each card names the moment that
+ * makes or breaks a deal in that vertical. The same list drives the apply
+ * form's industry picker (`label` is what gets saved on the lead, matching the
+ * store form's values), so add a vertical here and it shows up in both.
+ */
+const INDUSTRIES = [
+  { label: 'Pest', tag: '// THE SWITCHOVER', line: '"We already have a guy." Flip it before the screen door shuts.' },
+  { label: 'Roofing', tag: '// THE INSPECTION', line: 'Earn the ladder. Get on the roof, then get the signature.' },
+  { label: 'Solar', tag: '// THE BILL', line: 'Get the utility bill out of the drawer and onto the table.' },
+  { label: 'Fiber', tag: '// THE SWITCH', line: '"My internet\'s fine." Make them feel the lag they stopped noticing.' },
+];
+const INDUSTRY_OPTIONS = [...INDUSTRIES.map((i) => i.label), 'Other'];
+
 export default function HomeV2() {
   const rootRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
@@ -78,6 +93,7 @@ export default function HomeV2() {
 
   // ---- apply form ---------------------------------------------------------
   const [role, setRole] = useState<Role>('rep');
+  const [industry, setIndustry] = useState('Pest');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -399,6 +415,7 @@ export default function HomeV2() {
           name: fd.get('name'),
           email: fd.get('email'),
           phone: fd.get('phone'),
+          industry,
           message: fd.get('message'),
           customData: {
             source: 'home-apply',
@@ -433,6 +450,7 @@ export default function HomeV2() {
         </a>
         <nav>
           <a href="#theory">THE THEORY</a>
+          <a href="#doors">EVERY DOOR</a>
           <a href="#tapes">THE SOURCE MATERIAL</a>
           <a href="#system">THE SYSTEM</a>
           <a href="#work">THE WALL</a>
@@ -460,7 +478,7 @@ export default function HomeV2() {
             </h1>
             <p className="hero-sub">
               <b>SLAB</b> (or <b>Sales Lab</b>) is a <b>gamified training lab</b> for door-to-door
-              sales teams. No binders. No dead PowerPoints. Built in the field,{' '}
+              sales teams in <b>pest, roofing, solar and fiber</b>. No binders. No dead PowerPoints. Built in the field,{' '}
               <b>trained off the best of the best.</b>
             </p>
             <div className="hero-ctas">
@@ -472,8 +490,8 @@ export default function HomeV2() {
 
         <div className="ticker" aria-hidden="true">
           <div className="ticker-inner">
-            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; THE SAUCE &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
-            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; THE SAUCE &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
+            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; PEST &nbsp;★&nbsp; ROOFING &nbsp;★&nbsp; SOLAR &nbsp;★&nbsp; FIBER &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
+            REAL AUDIO &nbsp;★&nbsp; REAL DOORS &nbsp;★&nbsp; REAL CLOSES &nbsp;★&nbsp; PEST &nbsp;★&nbsp; ROOFING &nbsp;★&nbsp; SOLAR &nbsp;★&nbsp; FIBER &nbsp;★&nbsp; NO BABYSITTING &nbsp;★&nbsp; TRAINED OFF THE BEST &nbsp;★&nbsp;
           </div>
         </div>
 
@@ -511,6 +529,24 @@ export default function HomeV2() {
           </p>
         </section>
 
+        <section className="doors pad" id="doors">
+          <span className="kicker">EVERY DOOR</span>
+          <h2 className="h2 reveal">Different product. <em>Same door.</em></h2>
+          <p className="doors-sub">
+            Bugs, shingles, panels or a fiber line — the homeowner still opens the door the same
+            way. SLAB trains the part that travels: <b>the opener, the objection, the close.</b>
+          </p>
+          <div className="doors-grid">
+            {INDUSTRIES.map((ind) => (
+              <div className="door-card" key={ind.label}>
+                <h3>{ind.label}</h3>
+                <div className="who">{ind.tag}</div>
+                <p>{ind.line}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <section className="tapes pad" id="tapes">
           <span className="kicker">THE SOURCE MATERIAL</span>
           <div className="tapes-grid">
@@ -526,7 +562,8 @@ export default function HomeV2() {
                   Instead of some soulless AI chatbot or semi-decent salesman, we wanted{' '}
                   <b>the cream of the crop</b>. So we took <b>the previous record holder</b>, wired
                   him up, and recorded every opener, every objection, every close to get the best
-                  possible training and models.
+                  possible training and models. The product changes from door to door.{' '}
+                  <b>The pattern doesn&apos;t.</b>
                 </p>
                 <div className="wave" aria-hidden="true" ref={waveRef} />
                 <span className="stamp">RAW. UNCUT. FROM THE DOORSTEP.</span>
@@ -732,7 +769,7 @@ export default function HomeV2() {
           <span className="kicker">THE DOOR</span>
           <h2 className="h2 reveal">Knock.</h2>
           <p className="apply-sub">
-            Rep or owner — tell us who you are and what you&apos;re chasing. We sort every
+            Rep or owner, pest or roofing, solar or fiber — tell us who you are and what you&apos;re chasing. We sort every
             submission and knock back on the ones that fit.
           </p>
 
@@ -743,6 +780,7 @@ export default function HomeV2() {
             </div>
           ) : (
             <form onSubmit={handleApply} autoComplete="on">
+              <div className="seg-label" aria-hidden="true">I AM A</div>
               <div className="seg" role="radiogroup" aria-label="I am a">
                 {(['rep', 'owner', 'other'] as Role[]).map((r) => (
                   <Fragment key={r}>
@@ -751,6 +789,18 @@ export default function HomeV2() {
                       checked={role === r} onChange={() => setRole(r)}
                     />
                     <label htmlFor={`r-${r}`}>{r.toUpperCase()}</label>
+                  </Fragment>
+                ))}
+              </div>
+              <div className="seg-label" aria-hidden="true">MY INDUSTRY</div>
+              <div className="seg" role="radiogroup" aria-label="Industry">
+                {INDUSTRY_OPTIONS.map((opt) => (
+                  <Fragment key={opt}>
+                    <input
+                      type="radio" name="industry" id={`i-${opt}`} value={opt}
+                      checked={industry === opt} onChange={() => setIndustry(opt)}
+                    />
+                    <label htmlFor={`i-${opt}`}>{opt.toUpperCase()}</label>
                   </Fragment>
                 ))}
               </div>
