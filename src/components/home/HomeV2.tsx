@@ -336,10 +336,12 @@ export default function HomeV2() {
             scrollTrigger: { trigger: el, start: 'top 82%' },
           });
         });
-        gsap.from('.theory-col', {
-          y: 36, opacity: 0, duration: 0.45, ease: 'power3.out', stagger: 0.12,
-          scrollTrigger: { trigger: '.theory-grid', start: 'top 78%' },
-        });
+        // the two circles slide in from either side and lock together, then SLAB lands in the overlap
+        const vennTl = gsap.timeline({ scrollTrigger: { trigger: '.venn', start: 'top 75%' } });
+        vennTl
+          .from('.venn-circle.owners', { xPercent: -30, opacity: 0, duration: 0.7, ease: 'power3.out' })
+          .from('.venn-circle.reps', { xPercent: 30, opacity: 0, duration: 0.7, ease: 'power3.out' }, '<')
+          .from('.venn-core', { scale: 0.4, opacity: 0, duration: 0.5, ease: 'back.out(2.2)' }, '-=0.15');
         gsap.from('.track', {
           x: -24, opacity: 0, duration: 0.35, ease: 'power3.out', stagger: 0.07,
           scrollTrigger: { trigger: '.tracklist', start: 'top 80%' },
@@ -509,26 +511,35 @@ export default function HomeV2() {
             Training that&apos;s <b>weak</b> — or training <b>nobody touches</b> unless a manager is
             standing over their shoulder. SLAB was built on one observation:
           </p>
-          <div className="theory-grid">
-            <div className="theory-col">
-              <h3>Owners want <em>a system.</em></h3>
-              <div className="who">{'// STRUCTURE. VISIBILITY. REPEATABILITY.'}</div>
-              <ul>
-                <li>A pattern every rookie follows</li>
-                <li>Video series: the pitch, the objections, the close</li>
-                <li>Proof of who&apos;s actually training</li>
-                <li>Ramp that doesn&apos;t depend on one good trainer</li>
-              </ul>
+          <div className="venn">
+            <div className="venn-circle owners">
+              <div className="venn-copy">
+                <h3>Owners want <em>a system.</em></h3>
+                <div className="who">{'// STRUCTURE. VISIBILITY.'}</div>
+                <ul>
+                  <li>A pattern every rookie follows</li>
+                  <li>The pitch, the objections, the close</li>
+                  <li>Proof of who&apos;s actually training</li>
+                  <li>Ramp that doesn&apos;t need one good trainer</li>
+                </ul>
+              </div>
             </div>
-            <div className="theory-col">
-              <h3>Reps want <em>the sauce.</em></h3>
-              <div className="who">{'// RAW. FAST. FROM THE FIELD.'}</div>
-              <ul>
-                <li>Pure audio from real doorsteps</li>
-                <li>What the killers actually say, word for word</li>
-                <li>A game, not a homework packet</li>
-                <li>Something worth opening between doors</li>
-              </ul>
+            <div className="venn-circle reps">
+              <div className="venn-copy">
+                <h3>Reps want <em>the sauce.</em></h3>
+                <div className="who">{'// RAW. FAST. FROM THE FIELD.'}</div>
+                <ul>
+                  <li>Pure audio from real doorsteps</li>
+                  <li>What the killers say, word for word</li>
+                  <li>A game, not a homework packet</li>
+                  <li>Worth opening between doors</li>
+                </ul>
+              </div>
+            </div>
+            <div className="venn-core">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/v2/logo-dark.png" alt="SLAB" />
+              <span>THE ANSWER</span>
             </div>
           </div>
           <p className="theory-punch" style={{ marginTop: 48 }}>
