@@ -24,6 +24,7 @@
   background:var(--black);color:var(--bone);
   font-family:var(--mono);font-size:16px;line-height:1.55;
   -webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;
 }
 .slab-v2 *,.slab-v2 *::before,.slab-v2 *::after{box-sizing:border-box;margin:0;}
 html.slab-v2-html{scroll-behavior:smooth;scroll-padding-top:76px;}
@@ -213,17 +214,21 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 .slab-v2 .venn{
   --d:min(560px,46vw);
   position:relative;display:flex;justify-content:center;margin:64px auto 0;
-  max-width:calc(var(--d) * 1.6);
+  width:min(100%,calc(var(--d) * 1.6));
 }
 .slab-v2 .venn-circle{
   position:relative;flex:0 0 var(--d);width:var(--d);aspect-ratio:1;border-radius:50%;
   display:flex;align-items:center;
 }
-.slab-v2 .venn-circle.owners{border:2px solid var(--bone);background:rgba(237,234,226,.05);justify-content:flex-start;}
-.slab-v2 .venn-circle.reps{
-  border:2px solid var(--orange);background:rgba(244,113,30,.07);justify-content:flex-end;
-  margin-left:calc(var(--d) * -.4);
-}
+.slab-v2 .venn-circle.owners{justify-content:flex-start;}
+/* the rings are drawn by an SVG behind the copy, so the overlap can be its own shape */
+.slab-v2 .venn-art{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+.slab-v2 .venn-art.tall{display:none;}
+.slab-v2 .venn-art .ring{fill:rgba(237,234,226,.04);stroke:var(--bone);stroke-width:2;vector-effect:non-scaling-stroke;}
+.slab-v2 .venn-art .edge{fill:none;stroke:var(--orange);stroke-width:2.5;vector-effect:non-scaling-stroke;}
+.slab-v2 .venn-art .lens{filter:drop-shadow(0 0 14px rgba(244,113,30,.55));animation:slab-lens 3.2s ease-in-out infinite;}
+@keyframes slab-lens{0%,100%{opacity:.85}50%{opacity:1}}
+.slab-v2 .venn-circle.reps{justify-content:flex-end;margin-left:calc(var(--d) * -.4);}
 /* copy sits in the outer crescent of each circle, clear of the overlap */
 .slab-v2 .venn-copy{width:54%;}
 .slab-v2 .owners .venn-copy{padding-left:10%;}
@@ -241,9 +246,9 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 .slab-v2 .reps li::before{left:auto;right:0;content:"<";}
 /* the overlap: SLAB as the answer */
 .slab-v2 .venn-core{
-  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;
-  display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none;
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;pointer-events:none;
 }
+.slab-v2 .venn-core-in{display:flex;flex-direction:column;align-items:center;gap:10px;}
 .slab-v2 .venn-core::before{
   content:"";position:absolute;left:50%;top:42%;width:220%;aspect-ratio:1;transform:translate(-50%,-50%);
   background:radial-gradient(circle,rgba(244,113,30,.45) 0%,rgba(244,113,30,0) 62%);
@@ -253,21 +258,28 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 .slab-v2 .venn-core span{
   font-size:11px;font-weight:700;letter-spacing:.28em;color:#000;background:var(--orange);padding:5px 10px;
 }
-/* phones: the circles stack and overlap top to bottom */
+/* phones: the circles stack and overlap top to bottom. Everything inside is
+   sized off the circle's diameter so it fits on any phone width. */
 @media(max-width:760px){
-  .slab-v2 .venn{--d:min(350px,90vw);flex-direction:column;align-items:center;max-width:none;}
-  .slab-v2 .venn-circle{justify-content:center;align-items:flex-start;}
-  .slab-v2 .venn-circle.reps{margin-left:0;margin-top:calc(var(--d) * -.36);align-items:flex-end;justify-content:center;}
-  .slab-v2 .venn-copy,.slab-v2 .reps .venn-copy{width:80%;padding:10% 0 0;text-align:center;}
-  .slab-v2 .reps .venn-copy{padding:0 0 9%;}
-  .slab-v2 .venn h3{font-size:24px;margin-bottom:10px;}
+  .slab-v2 .venn{
+    --d:min(360px,calc(100vw - 40px));
+    flex-direction:column;align-items:center;max-width:none;width:var(--d);
+  }
+  /* each block is centred in the part of its circle outside the overlap, where it's widest */
+  .slab-v2 .venn-art.wide{display:none;}
+  .slab-v2 .venn-art.tall{display:block;}
+  .slab-v2 .venn-circle,.slab-v2 .venn-circle.owners,.slab-v2 .venn-circle.reps{justify-content:center;align-items:center;}
+  .slab-v2 .venn-circle.reps{margin-left:0;margin-top:calc(var(--d) * -.36);}
+  .slab-v2 .venn-copy,.slab-v2 .owners .venn-copy,.slab-v2 .reps .venn-copy{width:70%;padding:0 0 calc(var(--d) * .24);text-align:center;}
+  .slab-v2 .reps .venn-copy{padding:calc(var(--d) * .24) 0 0;}
+  .slab-v2 .venn h3{font-size:calc(var(--d) * .068);margin-bottom:calc(var(--d) * .03);}
   .slab-v2 .venn .who{display:none;}
-  .slab-v2 .venn ul{font-size:11.5px;line-height:1.3;gap:5px;}
+  .slab-v2 .venn ul{font-size:calc(var(--d) * .033);line-height:1.3;gap:calc(var(--d) * .014);}
   .slab-v2 .venn li,.slab-v2 .reps li{padding:0;}
   .slab-v2 .venn li::before{display:none;}
-  .slab-v2 .venn-core{gap:6px;}
-  .slab-v2 .venn-core img{width:84px;}
-  .slab-v2 .venn-core span{font-size:9.5px;padding:4px 8px;}
+  .slab-v2 .venn-core-in{gap:calc(var(--d) * .016);}
+  .slab-v2 .venn-core img{width:calc(var(--d) * .25);}
+  .slab-v2 .venn-core span{font-size:calc(var(--d) * .027);padding:4px 8px;}
 }
 
 /* ---------- every door (industries) ---------- */
@@ -631,7 +643,7 @@ body.slab-v2-body{background:#000;overflow-x:hidden;}
 @media (prefers-reduced-motion: reduce){
   html.slab-v2-html{scroll-behavior:auto;}
   .slab-v2 .grain,.slab-v2 .ticker-inner,.slab-v2 .wave i,.slab-v2 .eq i,
-  .slab-v2 .specter .hum,.slab-v2 .specter img,.slab-v2 .flatline::after,.slab-v2 .venn-core::before,.slab-v2 .vs-btn,.slab-v2 .vs-cta,.slab-v2 .vs-btn::after,.slab-v2 .vs-badge,
+  .slab-v2 .specter .hum,.slab-v2 .specter img,.slab-v2 .flatline::after,.slab-v2 .venn-core::before,.slab-v2 .venn-art .lens,.slab-v2 .vs-btn,.slab-v2 .vs-cta,.slab-v2 .vs-btn::after,.slab-v2 .vs-badge,
   .slab-v2 .prize .float-obj,.slab-v2 .prize .shadow{animation:none!important;}
   .slab-v2 .reveal{clip-path:none!important;}
 }
