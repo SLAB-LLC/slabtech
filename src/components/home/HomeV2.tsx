@@ -336,10 +336,13 @@ export default function HomeV2() {
             scrollTrigger: { trigger: el, start: 'top 82%' },
           });
         });
-        gsap.from('.theory-col', {
-          y: 36, opacity: 0, duration: 0.45, ease: 'power3.out', stagger: 0.12,
-          scrollTrigger: { trigger: '.theory-grid', start: 'top 78%' },
-        });
+        // the rings draw in, each side's copy slides in from its edge, then SLAB lands in the overlap
+        const vennTl = gsap.timeline({ scrollTrigger: { trigger: '.venn', start: 'top 75%' } });
+        vennTl
+          .from('.venn-art', { scale: 0.9, opacity: 0, duration: 0.6, ease: 'power3.out' })
+          .from('.venn-circle.owners .venn-copy', { x: -40, opacity: 0, duration: 0.5, ease: 'power3.out' }, '-=0.3')
+          .from('.venn-circle.reps .venn-copy', { x: 40, opacity: 0, duration: 0.5, ease: 'power3.out' }, '<')
+          .from('.venn-core-in', { scale: 0.4, opacity: 0, duration: 0.5, ease: 'back.out(2.2)' }, '-=0.15');
         gsap.from('.track', {
           x: -24, opacity: 0, duration: 0.35, ease: 'power3.out', stagger: 0.07,
           scrollTrigger: { trigger: '.tracklist', start: 'top 80%' },
@@ -509,26 +512,73 @@ export default function HomeV2() {
             Training that&apos;s <b>weak</b> — or training <b>nobody touches</b> unless a manager is
             standing over their shoulder. SLAB was built on one observation:
           </p>
-          <div className="theory-grid">
-            <div className="theory-col">
-              <h3>Owners want <em>a system.</em></h3>
-              <div className="who">{'// STRUCTURE. VISIBILITY. REPEATABILITY.'}</div>
-              <ul>
-                <li>A pattern every rookie follows</li>
-                <li>Video series: the pitch, the objections, the close</li>
-                <li>Proof of who&apos;s actually training</li>
-                <li>Ramp that doesn&apos;t depend on one good trainer</li>
-              </ul>
+          <div className="venn">
+            <svg className="venn-art wide" viewBox="0 0 160 100" aria-hidden="true">
+              <defs>
+                <clipPath id="venn-o-wide"><circle cx="50" cy="50" r="49.5" /></clipPath>
+                <clipPath id="venn-r-wide"><circle cx="110" cy="50" r="49.5" /></clipPath>
+                <radialGradient id="venn-glow-wide" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#F4711E" stopOpacity=".55" />
+                  <stop offset="100%" stopColor="#F4711E" stopOpacity=".12" />
+                </radialGradient>
+              </defs>
+              <circle className="ring" cx="50" cy="50" r="49.5" />
+              <circle className="ring" cx="110" cy="50" r="49.5" />
+              {/* where the circles meet: orange fill and orange edges */}
+              <g className="lens">
+                <circle clipPath="url(#venn-o-wide)" cx="110" cy="50" r="49.5" fill="url(#venn-glow-wide)" />
+                <circle clipPath="url(#venn-o-wide)" className="edge" cx="110" cy="50" r="49.5" />
+                <circle clipPath="url(#venn-r-wide)" className="edge" cx="50" cy="50" r="49.5" />
+              </g>
+            </svg>
+            <svg className="venn-art tall" viewBox="0 0 100 164" aria-hidden="true">
+              <defs>
+                <clipPath id="venn-o-tall"><circle cx="50" cy="50" r="49.5" /></clipPath>
+                <clipPath id="venn-r-tall"><circle cx="50" cy="114" r="49.5" /></clipPath>
+                <radialGradient id="venn-glow-tall" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#F4711E" stopOpacity=".55" />
+                  <stop offset="100%" stopColor="#F4711E" stopOpacity=".12" />
+                </radialGradient>
+              </defs>
+              <circle className="ring" cx="50" cy="50" r="49.5" />
+              <circle className="ring" cx="50" cy="114" r="49.5" />
+              {/* where the circles meet: orange fill and orange edges */}
+              <g className="lens">
+                <circle clipPath="url(#venn-o-tall)" cx="50" cy="114" r="49.5" fill="url(#venn-glow-tall)" />
+                <circle clipPath="url(#venn-o-tall)" className="edge" cx="50" cy="114" r="49.5" />
+                <circle clipPath="url(#venn-r-tall)" className="edge" cx="50" cy="50" r="49.5" />
+              </g>
+            </svg>
+            <div className="venn-circle owners">
+              <div className="venn-copy">
+                <h3>Owners want <em>a system.</em></h3>
+                <div className="who">{'// STRUCTURE. VISIBILITY.'}</div>
+                <ul>
+                  <li>A pattern every rookie follows</li>
+                  <li>The pitch, the objections, the close</li>
+                  <li>Proof of who&apos;s actually training</li>
+                  <li>Ramp that doesn&apos;t need one good trainer</li>
+                </ul>
+              </div>
             </div>
-            <div className="theory-col">
-              <h3>Reps want <em>the sauce.</em></h3>
-              <div className="who">{'// RAW. FAST. FROM THE FIELD.'}</div>
-              <ul>
-                <li>Pure audio from real doorsteps</li>
-                <li>What the killers actually say, word for word</li>
-                <li>A game, not a homework packet</li>
-                <li>Something worth opening between doors</li>
-              </ul>
+            <div className="venn-circle reps">
+              <div className="venn-copy">
+                <h3>Reps want <em>the sauce.</em></h3>
+                <div className="who">{'// RAW. FAST. FROM THE FIELD.'}</div>
+                <ul>
+                  <li>Pure audio from real doorsteps</li>
+                  <li>What the killers say, word for word</li>
+                  <li>A game, not a homework packet</li>
+                  <li>Worth opening between doors</li>
+                </ul>
+              </div>
+            </div>
+            <div className="venn-core">
+              <div className="venn-core-in">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/v2/logo-dark.png" alt="SLAB" />
+                <span>THE ANSWER</span>
+              </div>
             </div>
           </div>
           <p className="theory-punch" style={{ marginTop: 48 }}>
