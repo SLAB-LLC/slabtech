@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate activity type
-    const validActivityTypes = ['page_active', 'audio_playing', 'transcript_viewing', 'upload_activity'];
+    const validActivityTypes = ['page_active', 'audio_playing', 'video_playing', 'transcript_viewing', 'upload_activity'];
     if (!validActivityTypes.includes(activityType)) {
       return NextResponse.json(
         { error: 'Invalid activity type' },
@@ -40,12 +40,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Record heartbeat using database function
-    const { data, error } = await supabase.rpc('record_activity_heartbeat', {
+    const record = (type: string) => supabase.rpc('record_activity_heartbeat', {
       p_session_id: sessionId,
       p_page_path: pagePath,
-      p_activity_type: activityType,
+      p_activity_type: type,
       p_metadata: metadata,
     });
+    let { data, error } = await record(activityType);
+
+    // Before sql/usage-report-migration.sql runs, the table rejects 'video_playing'
+    if (error && activityType === 'video_playing') {
+      ({ data, error } = await record('page_active'));
+    }
 
     if (error) {
       console.error('Error recording heartbeat:', error);

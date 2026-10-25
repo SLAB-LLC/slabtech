@@ -1,5 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
+import { ActivityTrackingProvider } from '@/components/ActivityTrackingProvider';
 
 export default async function UserLayout({
   children,
@@ -31,5 +32,5 @@ export default async function UserLayout({
     redirect('/admin');
   }
 
-  return <>{children}</>;
+  return <ActivityTrackingProvider>{children}</ActivityTrackingProvider>;
 }
