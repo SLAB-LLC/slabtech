@@ -8,7 +8,8 @@
 --   theme    : brandName, cobrand, logoUrl, wordmarkUrl, statusBar, appStyle,
 --              colors{background, backgroundGradient[3], surface, surfaceRaised,
 --              accent, accentSoft, accentLine, onAccent, text, textMuted,
---              header, tabBar, danger, success}, coach{name, avatarUrl}
+--              header, tabBar, danger, success}, coach{name, avatarUrl},
+--              gear{name, letters, primary, dark} (pixel rep gear branding)
 --   features : street, vault, vaultUnlockXp, chatUnlockXp, aiCoach, rides,
 --              bossFights, bookTests, rookieVet, monthlyPrize,
 --              powerHour{enabled, startHour, multiplier}, streakTiers[{days, mult}],
@@ -125,6 +126,7 @@ SELECT c.id,
       "tabBar": "#0c0c0e",
       "success": "#34c77b"
     },
+    "gear": { "name": "Ace", "letters": "ACE", "primary": "#daae5d", "dark": "#1b1b20" },
     "coach": { "name": "Marshall" }
   }'::jsonb,
   '{
