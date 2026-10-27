@@ -14,7 +14,7 @@
 --              powerHour{enabled, startHour, multiplier}, streakTiers[{days, mult}],
 --              xp{book, bossFirstWin, bossRematch, vaultPerMinute, vaultDailyCap,
 --              libraryFirstOpen}
---   labels   : tabs{home, lab, vault, chat, leaderboard, library, audios, videos}
+--   labels   : tabs{lab, vault, chat, leaderboard, library}
 --
 -- Safe to run more than once.
 -- ============================================================================
