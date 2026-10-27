@@ -142,3 +142,5 @@ SET theme = EXCLUDED.theme,
 -- Check: should list Ace
 SELECT c.name, c.slug, a.theme->>'cobrand' AS cobrand
 FROM company_app_config a JOIN companies c ON c.id = a.company_id;
+
+-- End of company-app-config-migration.sql

@@ -210,3 +210,5 @@ $$;
 
 REVOKE ALL ON FUNCTION grant_xp(TEXT, TEXT, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION grant_xp(TEXT, TEXT, TEXT) TO authenticated;
+
+-- End of xp-engine-migration.sql
