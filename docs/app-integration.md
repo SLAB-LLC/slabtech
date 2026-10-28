@@ -130,3 +130,12 @@ Notes:
 
 - SQL lives in `sql/` and is run by hand in the Supabase SQL editor. Each app file ends with an `-- End of ...` marker; if that line is missing after pasting, the copy was clipped.
 - The app reads with the anon key plus the rep's session, so everything it sees must be allowed by RLS. Pipeline code using the service role bypasses RLS, so it must set `company_id` itself.
+
+## The Vault's published days (`vault_days`)
+
+The recording pipeline (slab-pipeline) cuts each day to its door pitches, bleeps private details, re-checks every pitch, and finds the objection and close moments. It publishes the result with `sql/vault-days-migration.sql`:
+
+- `vault_days`: one row per day, with `doors` and `clips` already in the app's `VX_DATA` shape. Clip `st`/`en` are seconds into that door's audio. `visibility` is `global` (the Marshall pack every company sees) or `company`. `featured` days are the ones the app loads; each carries its full transcript, so only about a dozen load at a time.
+- Storage `vault-audio` (private): one mp3 per door at `<global or company_id>/<transcript_id>/<NN>.mp3`. Each door's `src` is the file name, and the app signs it with the rep's session.
+
+The app's Vault (slab-mobile `src/game/vault.ts`) reads featured days and falls back to the pack that ships in the app when none are published.
