@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import { createServiceRoleClient } from '@/utils/supabase/service-role';
 import { NextRequest, NextResponse } from 'next/server';
+import { accountErrorResponse, getManagingActor, updateAccount } from '@/utils/users/accounts';
 
 // Helper to verify admin access
 async function verifyAdmin(supabase: any) {
@@ -98,45 +99,13 @@ export async function PATCH(
       return NextResponse.json({ error: adminCheck.error }, { status: adminCheck.status });
     }
 
-    const body = await request.json();
-    const updates: any = {};
-
-    if (typeof body.is_active === 'boolean') {
-      updates.is_active = body.is_active;
-    }
-    if (body.role && ['super_admin', 'company_admin', 'user'].includes(body.role)) {
-      updates.role = body.role;
-    }
-    if (body.display_name) {
-      updates.display_name = body.display_name;
-    }
-    if (body.company_id) {
-      updates.company_id = body.company_id;
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: 'No valid updates provided' }, { status: 400 });
-    }
-
-    updates.updated_at = new Date().toISOString();
-
-    // Use service role client to update (bypasses RLS)
-    const serviceSupabase = createServiceRoleClient();
-    const { data, error } = await serviceSupabase
-      .from('user_profiles')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
+    const actor = await getManagingActor(supabase);
+    await updateAccount(actor, id, await request.json());
+    const { data } = await createServiceRoleClient().from('user_profiles').select('*').eq('id', id).single();
     return NextResponse.json({ success: true, profile: data });
-  } catch (error: any) {
-    console.error('Error updating user:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    const { body, status } = accountErrorResponse(error);
+    return NextResponse.json(body, { status });
   }
 }
 

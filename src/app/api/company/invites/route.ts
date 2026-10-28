@@ -1,6 +1,8 @@
 import { createClient } from '@/utils/supabase/server'
 import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import { NextRequest, NextResponse } from 'next/server'
+import { assignableRoles, COMPANY_ROLES, isLevel } from '@/utils/users/roles'
+import { accountErrorResponse, companyFor } from '@/utils/users/accounts'
 
 /**
  * POST /api/company/invites
@@ -28,16 +30,26 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json()
-  const { email, role = 'user', companyId } = body
+  const { email, role = 'user', level = 'rookie', companyId } = body
 
   // Validate email
   if (!email || !email.includes('@')) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
   }
 
-  // Validate role
-  if (!['user', 'company_admin'].includes(role)) {
+  // Same role rules as creating an account directly (src/utils/users/accounts.ts)
+  if (!(COMPANY_ROLES as string[]).includes(role) || !assignableRoles(profile.role).includes(role)) {
     return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+  }
+  if (!isLevel(level)) {
+    return NextResponse.json({ error: 'Invalid level' }, { status: 400 })
+  }
+  let targetCompanyId: string
+  try {
+    targetCompanyId = companyFor({ id: user.id, role: profile.role, company_id: profile.company_id }, companyId)
+  } catch (err) {
+    const { body, status } = accountErrorResponse(err)
+    return NextResponse.json(body, { status })
   }
 
   // Use service role to create invite
@@ -50,9 +62,10 @@ export async function POST(request: NextRequest) {
   const { data: invite, error } = await serviceSupabase
     .from('company_invites')
     .insert({
-      company_id: companyId || profile.company_id,
+      company_id: targetCompanyId,
       email,
       role,
+      level,
       token,
       expires_at: expiresAt.toISOString(),
       invited_by: user.id,

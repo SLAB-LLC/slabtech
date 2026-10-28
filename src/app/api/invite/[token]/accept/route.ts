@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import { NextRequest, NextResponse } from 'next/server'
+import { provisionAccount } from '@/utils/users/accounts'
 
 /**
  * POST /api/invite/[token]/accept
@@ -41,39 +42,16 @@ export async function POST(
   }
 
   try {
-    // Create user with service role client
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    // Same account setup as owners and admins use (src/utils/users/accounts.ts)
+    const newUser = await provisionAccount({
       email: invite.email,
       password,
-      email_confirm: true, // Auto-confirm email for invited users
-      user_metadata: {
-        role: invite.role,
-        display_name: displayName,
-      },
+      displayName: displayName.trim(),
+      role: invite.role,
+      level: invite.level || 'rookie',
+      companyId: invite.company_id,
     })
-
-    if (authError) {
-      console.error('Failed to create user:', authError)
-      return NextResponse.json({ error: authError.message }, { status: 500 })
-    }
-
-    // Wait a moment for the trigger to create the user profile
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
-    // Update user profile with company_id and display_name
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .update({
-        company_id: invite.company_id,
-        display_name: displayName.trim(),
-        role: invite.role,
-      })
-      .eq('id', authData.user.id)
-
-    if (profileError) {
-      console.error('Failed to update user profile:', profileError)
-      // Don't fail the request, profile might be created by trigger
-    }
+    const authData = { user: newUser }
 
     // Mark invite as accepted
     const { error: updateError } = await supabase
@@ -97,7 +75,7 @@ export async function POST(
   } catch (error) {
     console.error('Unexpected error accepting invite:', error)
     return NextResponse.json(
-      { error: 'An unexpected error occurred' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred' },
       { status: 500 }
     )
   }
