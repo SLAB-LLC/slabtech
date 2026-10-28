@@ -51,7 +51,8 @@ export async function POST(request: NextRequest) {
     const { data: myTeams } = await service.from('teams').select('id').eq('company_id', me.company_id).eq('manager_id', me.id)
     const managed = new Set((myTeams ?? []).map((x) => x.id))
 
-    let query = service.from('user_profiles').select('id, team_id').eq('company_id', me.company_id).eq('is_active', true).neq('id', me.id)
+    // The sender gets a copy of company and team sends, so they see what reps see
+    let query = service.from('user_profiles').select('id, team_id').eq('company_id', me.company_id).eq('is_active', true)
     if (to === 'team') {
       if (!teamId || (!owner && !managed.has(teamId))) return NextResponse.json({ error: 'Pick one of your teams' }, { status: 403 })
       query = query.eq('team_id', teamId)
@@ -63,8 +64,9 @@ export async function POST(request: NextRequest) {
     }
     const { data: people, error } = await query
     if (error) throw error
-    const recipients = (people ?? []).filter((p) => owner || managed.has(p.team_id))
-    if (recipients.length === 0) return NextResponse.json({ error: 'Nobody to send that to' }, { status: 400 })
+    const recipients = (people ?? []).filter((p) => owner || managed.has(p.team_id) || p.id === me.id)
+    const reach = recipients.filter((p) => p.id !== me.id).length
+    if (reach === 0) return NextResponse.json({ error: 'Nobody to send that to' }, { status: 400 })
 
     const targetType = to === 'rep' ? 'user' : to === 'team' ? 'team' : 'company'
     const targetId = to === 'rep' ? repId : to === 'team' ? teamId : me.company_id
@@ -88,7 +90,7 @@ export async function POST(request: NextRequest) {
     })
     if (logErr) console.error('notification_log insert failed:', logErr.message)
 
-    return NextResponse.json({ reach: recipients.length, sent: result.sent, broadcast_id: row.id })
+    return NextResponse.json({ reach, sent: result.sent, broadcast_id: row.id })
   } catch (err) {
     console.error('Company notify failed:', err)
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Something went wrong' }, { status: 500 })
