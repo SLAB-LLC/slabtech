@@ -31,6 +31,20 @@ Per-company app settings live in `company_app_config` (one row per company: `the
 - `features.vault` turns the Vault tab on or off.
 - `features.vaultUnlockXp` (default 500) is the total XP a rep needs before the Vault opens.
 - `theme.coach.name` (Marshall for now) is the coach's display name.
+- `features.companyLessons` (default off) puts the company's own training videos on the app's street. Off, Ace runs the standard SLAB levels and other companies see every door locked until their training is in.
+
+## Roles and levels
+
+The website and the app share one set of roles (`sql/roles-migration.sql`, `src/utils/users/roles.ts`):
+
+| `user_profiles.role` | Shown as | Can |
+|---|---|---|
+| `user` | Rep | Use the app |
+| `manager` | Manager | Same as a rep for now; My Team in the app is still demo data |
+| `company_admin` | Owner | Create and change accounts in their own company |
+| `super_admin` | Owner · SLAB admin | Owner of every company |
+
+`user_profiles.level` is `rookie` or `vet`. Vets get every lesson, the Vault and chat open without the XP unlock. Accounts are created and changed only through `src/utils/users/accounts.ts`, which the admin pages, the company portal and invites all use, so the rules can't drift apart.
 
 ## What a recording looks like to the app
 
