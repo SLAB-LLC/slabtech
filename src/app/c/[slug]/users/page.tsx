@@ -5,12 +5,14 @@ import { createClient } from '@/utils/supabase/client'
 import { Heading, Text, Card } from '@/components'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { CreateAccountModal, RoleLevelPicker } from '@/components/users/AccountControls'
 
 interface UserProfile {
   id: string
   email: string
   display_name: string | null
-  role: 'super_admin' | 'company_admin' | 'user'
+  role: string
+  level: string | null
   is_active: boolean
   created_at: string
 }
@@ -28,10 +30,7 @@ export default function CompanyUsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([])
   const [company, setCompany] = useState<Company | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [formEmail, setFormEmail] = useState('')
-  const [formDisplayName, setFormDisplayName] = useState('')
-  const [formPassword, setFormPassword] = useState('')
-  const [saveLoading, setSaveLoading] = useState(false)
+  const [me, setMe] = useState<{ id: string; role: string } | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   const supabase = createClient()
@@ -45,6 +44,8 @@ export default function CompanyUsersPage() {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      const { data: myProfile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single()
+      setMe({ id: user.id, role: myProfile?.role ?? 'user' })
 
       // Get the company from the URL slug (not the user's company)
       const { data: companyData } = await supabase
@@ -70,62 +71,6 @@ export default function CompanyUsersPage() {
       console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleCreateUser = async () => {
-    if (!formEmail || !formPassword) {
-      setMessage({ type: 'error', text: 'Email and password are required' })
-      return
-    }
-
-    // Check account limit
-    if (company?.account_limit) {
-      const activeUsers = users.filter(u => u.is_active).length
-      if (activeUsers >= company.account_limit) {
-        setMessage({
-          type: 'error',
-          text: `Account limit reached (${company.account_limit} users). Please contact your administrator to increase the limit.`
-        })
-        return
-      }
-    }
-
-    setSaveLoading(true)
-    setMessage(null)
-
-    try {
-      const response = await fetch('/api/company/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formEmail,
-          password: formPassword,
-          display_name: formDisplayName,
-          company_id: company?.id,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setMessage({ type: 'error', text: data.error || 'Failed to create user' })
-        return
-      }
-
-      setMessage({ type: 'success', text: 'User created successfully!' })
-      setShowCreateModal(false)
-      setFormEmail('')
-      setFormPassword('')
-      setFormDisplayName('')
-      fetchData()
-
-      // Auto-dismiss success message
-      setTimeout(() => setMessage(null), 4000)
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Failed to create user' })
-    } finally {
-      setSaveLoading(false)
     }
   }
 
@@ -211,6 +156,7 @@ export default function CompanyUsersPage() {
                 <tr className="border-b border-gray-200">
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role · Level</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -224,6 +170,19 @@ export default function CompanyUsersPage() {
                     </td>
                     <td className="px-4 py-4">
                       <Text size="sm" className="text-gray-600">{user.email}</Text>
+                    </td>
+                    <td className="px-4 py-4">
+                      {me && (
+                        <RoleLevelPicker
+                          actorRole={me.role}
+                          userId={user.id}
+                          role={user.role}
+                          level={user.level}
+                          isSelf={user.id === me.id}
+                          onChanged={fetchData}
+                          onError={(text) => setMessage({ type: 'error', text })}
+                        />
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -264,86 +223,20 @@ export default function CompanyUsersPage() {
         )}
       </div>
 
-      {/* Create User Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div className="p-6 border-b">
-              <h2 className="text-xl font-bold" style={{ color: 'var(--company-secondary)' }}>
-                Create New User
-              </h2>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  value={formEmail}
-                  onChange={(e) => setFormEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2"
-                  style={{ '--tw-ring-color': 'var(--company-primary)' } as any}
-                  placeholder="user@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name
-                </label>
-                <input
-                  type="text"
-                  value={formDisplayName}
-                  onChange={(e) => setFormDisplayName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2"
-                  style={{ '--tw-ring-color': 'var(--company-primary)' } as any}
-                  placeholder="John Doe"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  value={formPassword}
-                  onChange={(e) => setFormPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2"
-                  style={{ '--tw-ring-color': 'var(--company-primary)' } as any}
-                  placeholder="••••••••"
-                />
-              </div>
-
-              {company?.account_limit && (
-                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  <Text size="sm" className="text-blue-800">
-                    {activeUsers} / {company.account_limit} active accounts used
-                  </Text>
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 border-t flex gap-3">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateUser}
-                disabled={saveLoading || !formEmail || !formPassword}
-                className="flex-1 px-4 py-2 rounded-lg text-white font-semibold disabled:opacity-50"
-                style={{ backgroundColor: 'var(--company-primary)' }}
-              >
-                {saveLoading ? 'Creating...' : 'Create User'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Create User Modal: the same form SLAB admins use */}
+      {showCreateModal && me && (
+        <CreateAccountModal
+          actorRole={me.role}
+          companyId={company?.id}
+          seatsNote={company?.account_limit ? `${activeUsers} / ${company.account_limit} active accounts used` : null}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => {
+            setShowCreateModal(false)
+            setMessage({ type: 'success', text: 'User created successfully!' })
+            fetchData()
+            setTimeout(() => setMessage(null), 4000)
+          }}
+        />
       )}
     </div>
   )

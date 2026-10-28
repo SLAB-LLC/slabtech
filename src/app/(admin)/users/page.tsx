@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { Heading, Text, Card, Container } from '@/components';
+import { CreateAccountModal, RoleLevelPicker } from '@/components/users/AccountControls';
 
-interface UserProfile {
+interface ProfileFields {
   id: string;
-  email: string;
-  display_name: string | null;
-  role: 'admin' | 'user';
-  is_active: boolean;
-  created_at: string;
+  role: string;
+  level: string | null;
+  company_id: string | null;
 }
 
 interface UserLoginStats {
@@ -36,72 +35,40 @@ export default function UserManagementPage() {
   const [orphanedUsers, setOrphanedUsers] = useState<any[]>([]);
   const [cleanupLoading, setCleanupLoading] = useState(false);
 
-  // Create user form
-  const [newEmail, setNewEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [newDisplayName, setNewDisplayName] = useState('');
-  const [newRole, setNewRole] = useState<'admin' | 'user'>('user');
-  const [createLoading, setCreateLoading] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
+  // Role, level and company per account, the companies, and who's signed in
+  const [profiles, setProfiles] = useState<Record<string, ProfileFields>>({});
+  const [companies, setCompanies] = useState<{ id: string; name: string }[]>([]);
+  const [me, setMe] = useState<{ id: string; role: string } | null>(null);
 
   const fetchUsers = async () => {
     const supabase = createClient();
 
-    // Fetch user login stats from the view
-    const { data, error } = await supabase
-      .from('user_login_stats')
-      .select('*')
-      .order('email');
+    const [{ data, error }, profilesRes, companiesRes, authRes] = await Promise.all([
+      // Login stats from the view
+      supabase.from('user_login_stats').select('*').order('email'),
+      fetch('/api/admin/users').then((r) => (r.ok ? r.json() : { users: [] })),
+      supabase.from('companies').select('id, name').order('name'),
+      supabase.auth.getUser(),
+    ]);
 
     if (data && !error) {
       setUsers(data);
     }
+    const byId: Record<string, ProfileFields> = {};
+    for (const p of (profilesRes.users ?? []) as ProfileFields[]) byId[p.id] = p;
+    setProfiles(byId);
+    setCompanies(companiesRes.data ?? []);
+    const myId = authRes.data.user?.id;
+    if (myId) setMe({ id: myId, role: byId[myId]?.role ?? 'user' });
 
     setLoading(false);
   };
 
+  const companyName = (id: string | null | undefined) => companies.find((c) => c.id === id)?.name ?? 'No company';
+
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCreateLoading(true);
-    setCreateError(null);
-
-    try {
-      const response = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: newEmail,
-          password: newPassword,
-          displayName: newDisplayName || newEmail,
-          role: newRole,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create user');
-      }
-
-      // Reset form and close modal
-      setNewEmail('');
-      setNewPassword('');
-      setNewDisplayName('');
-      setNewRole('user');
-      setShowCreateModal(false);
-
-      // Refresh users list
-      fetchUsers();
-    } catch (error: any) {
-      setCreateError(error.message);
-    } finally {
-      setCreateLoading(false);
-    }
-  };
 
   const handleDeleteUser = async (userId: string) => {
     try {
@@ -258,10 +225,18 @@ export default function UserManagementPage() {
 
                   {/* Badges */}
                   <div className="flex flex-wrap gap-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {user.role}
+                    {me && (
+                      <RoleLevelPicker
+                        actorRole={me.role}
+                        userId={user.user_id}
+                        role={profiles[user.user_id]?.role ?? user.role}
+                        level={profiles[user.user_id]?.level ?? null}
+                        isSelf={user.user_id === me.id}
+                        onChanged={fetchUsers}
+                      />
+                    )}
+                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700">
+                      {companyName(profiles[user.user_id]?.company_id)}
                     </span>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                       user.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
@@ -323,7 +298,7 @@ export default function UserManagementPage() {
                   User
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
+                  Role · Company
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -356,13 +331,17 @@ export default function UserManagementPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      user.role === 'admin'
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {user.role}
-                    </span>
+                    {me && (
+                      <RoleLevelPicker
+                        actorRole={me.role}
+                        userId={user.user_id}
+                        role={profiles[user.user_id]?.role ?? user.role}
+                        level={profiles[user.user_id]?.level ?? null}
+                        isSelf={user.user_id === me.id}
+                        onChanged={fetchUsers}
+                      />
+                    )}
+                    <div className="text-xs text-gray-500 mt-1">{companyName(profiles[user.user_id]?.company_id)}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -420,94 +399,17 @@ export default function UserManagementPage() {
         </>
       )}
 
-      {/* Create User Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h2 className="text-xl font-bold text-midnight-blue mb-4">Create New User</h2>
-
-            <form onSubmit={handleCreateUser} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success-gold focus:border-transparent"
-                  placeholder="user@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success-gold focus:border-transparent"
-                  placeholder="Minimum 6 characters"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name (optional)
-                </label>
-                <input
-                  type="text"
-                  value={newDisplayName}
-                  onChange={(e) => setNewDisplayName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success-gold focus:border-transparent"
-                  placeholder="John Doe"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <select
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value as 'admin' | 'user')}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-success-gold focus:border-transparent"
-                >
-                  <option value="user">User (Limited Access)</option>
-                  <option value="admin">Admin (Full Access)</option>
-                </select>
-              </div>
-
-              {createError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm">
-                  {createError}
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={createLoading}
-                  className="flex-1 px-4 py-2 bg-success-gold text-white font-semibold rounded-lg hover:bg-amber-500 disabled:opacity-50"
-                >
-                  {createLoading ? 'Creating...' : 'Create User'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+      {/* Create User Modal: the same form owners use in their company portal */}
+      {showCreateModal && me && (
+        <CreateAccountModal
+          actorRole={me.role}
+          companies={companies}
+          onClose={() => setShowCreateModal(false)}
+          onCreated={() => {
+            setShowCreateModal(false);
+            fetchUsers();
+          }}
+        />
       )}
 
       {/* Delete Confirmation Modal */}
