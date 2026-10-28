@@ -22,7 +22,8 @@ export async function sendPush(
     .from('notification_preferences')
     .select(`user_id, ${opts.category}`)
     .in('user_id', tokenRows.map((t) => t.user_id))
-  const optedOut = new Set((prefs ?? []).filter((p: any) => p[opts.category] === false).map((p: any) => p.user_id))
+  const rows = (prefs ?? []) as unknown as Record<string, unknown>[]
+  const optedOut = new Set(rows.filter((p) => p[opts.category] === false).map((p) => p.user_id as string))
 
   const tokens = tokenRows
     .filter((t) => !optedOut.has(t.user_id))
