@@ -40,11 +40,20 @@ The website and the app share one set of roles (`sql/roles-migration.sql`, `src/
 | `user_profiles.role` | Shown as | Can |
 |---|---|---|
 | `user` | Rep | Use the app |
-| `manager` | Manager | Same as a rep for now; My Team in the app is still demo data |
+| `manager` | Manager | A rep who runs a team: sees it under My Team, sets their reps' level, nudges them |
 | `company_admin` | Owner | Create and change accounts in their own company |
 | `super_admin` | Owner · SLAB admin | Owner of every company |
 
 `user_profiles.level` is `rookie` or `vet`. Vets get every lesson, the Vault and chat open without the XP unlock. Accounts are created and changed only through `src/utils/users/accounts.ts`, which the admin pages, the company portal and invites all use, so the rules can't drift apart.
+
+### Owner tools in the app
+
+The app's Owner view and My Team run on `sql/owner-tools-migration.sql`, which follows the same rules:
+
+- `teams` (name, manager, weekly XP goal) and `user_profiles.team_id`
+- `company_roster()`: every rep with week and all-time XP, streak, lessons passed, Vault minutes, bosses beaten, last open and look. Owners see the company; managers see the teams they manage.
+- `manage_rep()`, `save_team()` and `invite_rep()` for changes. An invite returns a token; the app shares `<site>/invite/<token>` from the phone, and the accepted account joins the invite's team.
+- `POST /api/company/notify` sends announcements, nudges and shout-outs as pushes (category `company_alerts`). The app calls it with its Supabase access token as a bearer token. `GET` lists the company's recent announcements.
 
 ## What a recording looks like to the app
 
