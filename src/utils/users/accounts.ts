@@ -77,7 +77,7 @@ export interface NewAccount {
 }
 
 /** Makes the login and its profile; the profile always ends up with the role, level and company asked for */
-export async function provisionAccount(input: { email: string; password: string; displayName: string | null; role: UserRole; level: UserLevel; companyId: string }) {
+export async function provisionAccount(input: { email: string; password: string; displayName: string | null; role: UserRole; level: UserLevel; companyId: string; teamId?: string | null }) {
   const service = createServiceRoleClient()
   const { data, error } = await service.auth.admin.createUser({
     email: input.email,
@@ -103,6 +103,7 @@ export async function provisionAccount(input: { email: string; password: string;
         role: input.role,
         level: input.level,
         company_id: input.companyId,
+        ...(input.teamId ? { team_id: input.teamId } : {}),
         updated_at: new Date().toISOString(),
       },
       { onConflict: 'id' }

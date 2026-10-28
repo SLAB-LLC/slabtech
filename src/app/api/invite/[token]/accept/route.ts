@@ -50,6 +50,7 @@ export async function POST(
       role: invite.role,
       level: invite.level || 'rookie',
       companyId: invite.company_id,
+      teamId: invite.team_id ?? null,
     })
     const authData = { user: newUser }
 
