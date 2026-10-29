@@ -12,6 +12,12 @@
 --   marshall_videos()            Marshall's training videos (Ace's library,
 --                                matched like company-app-config-migration.sql
 --                                matches Ace) for his page in the Vault.
+--   admin_companies()            SLAB admins only: every company, for the
+--                                app's "View the app as" switch.
+--   admin_switch_company(id)     SLAB admins only: moves the admin's own
+--                                account to that company (NULL = no company,
+--                                solo mode) so the app shows exactly what that
+--                                company's reps see.
 --
 -- The training-videos storage bucket is already readable by every signed-in
 -- user, so the app signs video URLs the same way it does for Ace reps.
@@ -125,5 +131,41 @@ $$;
 
 REVOKE ALL ON FUNCTION marshall_videos() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION marshall_videos() TO authenticated;
+
+CREATE OR REPLACE FUNCTION admin_companies()
+RETURNS TABLE (id UUID, name TEXT, slug TEXT)
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT c.id, c.name, c.slug
+  FROM companies c
+  WHERE EXISTS (SELECT 1 FROM user_profiles up WHERE up.id = auth.uid() AND up.role = 'super_admin')
+  ORDER BY lower(c.name);
+$$;
+
+REVOKE ALL ON FUNCTION admin_companies() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION admin_companies() TO authenticated;
+
+CREATE OR REPLACE FUNCTION admin_switch_company(p_company_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'super_admin') THEN
+    RAISE EXCEPTION 'Only SLAB admins can switch companies';
+  END IF;
+  IF p_company_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM companies WHERE id = p_company_id) THEN
+    RAISE EXCEPTION 'No such company';
+  END IF;
+  UPDATE user_profiles SET company_id = p_company_id, updated_at = now() WHERE id = auth.uid();
+END;
+$$;
+
+REVOKE ALL ON FUNCTION admin_switch_company(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION admin_switch_company(UUID) TO authenticated;
 
 -- End of solo-mode-migration.sql
