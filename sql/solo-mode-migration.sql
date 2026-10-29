@@ -15,9 +15,13 @@
 --   admin_companies()            SLAB admins only: every company, for the
 --                                app's "View the app as" switch.
 --   admin_switch_company(id)     SLAB admins only: moves the admin's own
---                                account to that company (NULL = no company,
---                                solo mode) so the app shows exactly what that
---                                company's reps see.
+--                                account to that company (NULL = solo) so the
+--                                app shows exactly what that company's reps see.
+--
+-- Every account needs a company (user_profiles.company_id is NOT NULL), so reps
+-- who aren't with one belong to SLAB's house company, "SLAB Internal" (slug
+-- slab-internal, made by the multi-tenancy migration). The app runs those reps
+-- in solo mode, and here they show as having no company.
 --
 -- The training-videos storage bucket is already readable by every signed-in
 -- user, so the app signs video URLs the same way it does for Ace reps.
@@ -58,7 +62,7 @@ AS $$
           THEN np.parts[1] || ' ' || upper(left(np.parts[array_length(np.parts, 1)], 1)) || '.'
         ELSE trim(up.display_name)
       END AS name,
-      c.name AS company_name,
+      CASE WHEN c.slug = 'slab-internal' THEN NULL ELSE c.name END AS company_name,
       COALESCE(t.total_xp, 0) AS total_xp,
       COALESCE(us.current_streak, 0) AS streak,
       ua.look
@@ -142,6 +146,7 @@ AS $$
   SELECT c.id, c.name, c.slug
   FROM companies c
   WHERE EXISTS (SELECT 1 FROM user_profiles up WHERE up.id = auth.uid() AND up.role = 'super_admin')
+    AND c.slug IS DISTINCT FROM 'slab-internal'  -- the app lists it as "No company (solo)"
   ORDER BY lower(c.name);
 $$;
 
@@ -154,14 +159,22 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  target UUID := p_company_id;
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'super_admin') THEN
     RAISE EXCEPTION 'Only SLAB admins can switch companies';
   END IF;
-  IF p_company_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM companies WHERE id = p_company_id) THEN
+  -- Solo: SLAB's house company
+  IF target IS NULL THEN
+    SELECT id INTO target FROM companies WHERE slug = 'slab-internal';
+    IF target IS NULL THEN
+      RAISE EXCEPTION 'SLAB Internal company is missing';
+    END IF;
+  ELSIF NOT EXISTS (SELECT 1 FROM companies WHERE id = target) THEN
     RAISE EXCEPTION 'No such company';
   END IF;
-  UPDATE user_profiles SET company_id = p_company_id, updated_at = now() WHERE id = auth.uid();
+  UPDATE user_profiles SET company_id = target, updated_at = now() WHERE id = auth.uid();
 END;
 $$;
 

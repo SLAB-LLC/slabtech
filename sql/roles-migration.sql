@@ -32,14 +32,25 @@ ALTER TABLE company_invites DROP CONSTRAINT IF EXISTS company_invites_level_chec
 ALTER TABLE company_invites ADD CONSTRAINT company_invites_level_check
   CHECK (level IN ('rookie', 'vet'));
 
--- New accounts carry role and level from the website's sign-up data
+-- New accounts take role, level and company only from app metadata, which just the
+-- website's server (service role) can set. User metadata is whatever the person
+-- signing up sends, so trusting it let anyone call sign-up with role super_admin.
+-- No company in app metadata means no profile here: the website writes the
+-- profile itself right after making the login, and any other sign-up gets no
+-- access.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 DECLARE
   user_role TEXT;
   user_level TEXT;
+  user_company TEXT;
 BEGIN
-  user_role := COALESCE(NEW.raw_user_meta_data->>'role', 'user');
+  user_company := NEW.raw_app_meta_data->>'company_id';
+  IF user_company IS NULL OR user_company !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
+    RETURN NEW;
+  END IF;
+
+  user_role := COALESCE(NEW.raw_app_meta_data->>'role', 'user');
   IF user_role = 'admin' THEN
     user_role := 'super_admin';
   END IF;
@@ -47,7 +58,7 @@ BEGIN
     user_role := 'user';
   END IF;
 
-  user_level := COALESCE(NEW.raw_user_meta_data->>'level', 'rookie');
+  user_level := COALESCE(NEW.raw_app_meta_data->>'level', 'rookie');
   IF user_level NOT IN ('rookie', 'vet') THEN
     user_level := 'rookie';
   END IF;
@@ -56,16 +67,17 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.email),
+    COALESCE(NULLIF(NEW.raw_user_meta_data->>'display_name', ''), NEW.email),
     user_role,
     user_level,
-    (NEW.raw_user_meta_data->>'company_id')::UUID,
+    user_company::UUID,
     NOW(),
     NOW()
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- End of roles-migration.sql
