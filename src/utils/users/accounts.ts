@@ -83,12 +83,9 @@ export async function provisionAccount(input: { email: string; password: string;
     email: input.email,
     password: input.password,
     email_confirm: true,
-    user_metadata: {
-      display_name: input.displayName || input.email,
-      role: input.role,
-      level: input.level,
-      company_id: input.companyId,
-    },
+    user_metadata: { display_name: input.displayName || input.email },
+    // Access lives in app metadata, which only the server can write; the sign-up trigger ignores user metadata for it
+    app_metadata: { role: input.role, level: input.level, company_id: input.companyId },
   })
   if (error || !data.user) throw new AccountError(error?.message || 'Failed to create user', 500)
 
