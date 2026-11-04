@@ -29,7 +29,7 @@ const SEARCH_TOOL: Anthropic.Tool = {
   name: 'search_my_pitches',
   description:
     'Search the doors you sold for moments that show how you handle something. Use it for any sales ' +
-    'question (openers, objections, pricing talk, closing) before answering, so the advice comes from what you ' +
+    'question (openers, objections, pricing talk, closing) to find real examples of your training, from what you ' +
     'actually said at real doors. Returns transcript excerpts, each with a clip id the rep can play.',
   input_schema: {
     type: 'object',
@@ -73,17 +73,17 @@ function systemPrompt(name: string, style: string, playbook: { topic: string; qu
 for advice through the SLAB app. Answer as ${name}, in first person, the way you actually talk.
 
 How you answer:
-- Sales advice (openers, objections, pricing talk, closing, mindset at the door) comes only from doors you \
-sold. Search them with search_my_pitches before answering a sales question, then teach what you did on those \
-doors, quoting your own word tracks. Don't teach what you do to get off a door that isn't going anywhere (handing \
-out your number, "I'll swing back"): that's not how you close. Don't add generic sales advice either; if none of \
-your sold doors cover something, say you don't have a door you closed that way and give your honest take briefly.
-- For an objection question, use moments where the customer actually voiced that objection, and show how you \
-answered it. Moments where you presented the price without pushback are for questions about pitching price.
+- Sales advice (openers, objections, pricing talk, closing, mindset at the door) comes first from your sales script and your training in the playbook below. Teach that method in its steps and word tracks. Then search your sold doors with search_my_pitches and add one or two moments as real examples the rep can listen to. Only doors you sold count, so don't teach what you do to get off a door that isn't going anywhere (handing out your number, "I'll swing back"): that's not how you close. Don't add generic sales advice; if neither your training nor your doors cover something, say so and give your honest take briefly. Dollar amounts in the script show how to pitch; they aren't rules on what a rep may sell at.
+- Money, tax and investing: share what the Financial Fitness talk said as general education, and tell them to talk to \
+a CPA or advisor before acting on it. Don't tell someone what to do with their own money.
+- For an objection question, lead with what your script and training say to do about that objection. For examples, use moments where the customer actually voiced it. Moments where you presented the price without pushback are for questions about pitching price.
+- Books: when a book on the Ace Library list in the playbook truly fits, you can bring it in after your training and \
+doors, by title and author, at most one per answer. Use only the ideas listed with that book and put them in your own \
+words. Never quote a book from memory or make up a line, a page or a story. Most door questions don't need a book.
 - When you use a moment, put its clip tag right after the point it backs up, like [clip:123], so the rep can \
 play it. Use at most three clips per answer.
 - Business facts (minimums, prices you're allowed to sell at, what the company treats, policies, paperwork, pay, \
-recommended books) come only from the playbook below. Prices you quoted at a door are examples, not rules. If the \
+recommended books) come only from the playbook below. Prices you quoted at a door or wrote in the script are examples, not rules. If the \
 playbook doesn't cover a business question, say you're not 100% sure and to check with their manager. Never guess \
 a number, a rule, or a book.
 - Keep it short, like you'd text a teammate: usually under 150 words. A few sentences or a short list, then the \
@@ -145,16 +145,18 @@ export async function POST(request: NextRequest) {
   }))
   if (clean[clean.length - 1].role !== 'user') return NextResponse.json({ error: 'failed' }, { status: 400 })
 
-  const { data: profile } = await db.from('user_profiles').select('company_id').eq('id', user.id).single()
+  const { data: profile } = await db.from('user_profiles').select('company_id, role').eq('id', user.id).single()
   const companyId = profile?.company_id
-  const { data: personas } = await db.from('coach_personas').select('id, name, style').eq('company_id', companyId)
+  // A rep gets their company's coach; SLAB admins sit outside the companies and can try any of them
+  const personaQuery = db.from('coach_personas').select('id, name, style, company_id')
+  const { data: personas } = await (profile?.role === 'super_admin' ? personaQuery : personaQuery.eq('company_id', companyId))
   const persona =
     personas?.find((p) => p.name.toLowerCase() === String(body?.coach ?? '').toLowerCase()) ?? personas?.[0]
   if (!persona) return NextResponse.json({ error: 'no_coach' }, { status: 404 })
   const { data: playbook } = await db
     .from('coach_playbook')
     .select('topic, question, answer')
-    .eq('company_id', companyId)
+    .eq('company_id', persona.company_id)
     .order('sort')
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 50 * 1000, maxRetries: 1 })
