@@ -39,7 +39,7 @@ export default function UserDashboard() {
   const [userName, setUserName] = useState('');
   const [expandedSalespeople, setExpandedSalespeople] = useState<Set<string>>(new Set());
   const [salespeopleProfiles, setSalespeopleProfiles] = useState<Record<string, Salesperson>>({});
-  const [subscribedSalespeople, setSubscribedSalespeople] = useState<string[]>([]);
+  const [repNames, setRepNames] = useState<string[]>([]);
   const [streakData, setStreakData] = useState<{
     current_streak: number;
     longest_streak: number;
@@ -124,7 +124,6 @@ export default function UserDashboard() {
           .eq('user_id', user.id);
 
         const salespersonNames = subscriptions?.map(s => s.salesperson_name) || [];
-        setSubscribedSalespeople(salespersonNames);
 
         // 3. Get transcript IDs for subscribed salespeople
         let subscribedIds: string[] = [];
@@ -150,6 +149,7 @@ export default function UserDashboard() {
 
           if (transcriptData) {
             setTranscripts(transcriptData);
+            setRepNames(Array.from(new Set(transcriptData.map((t: { salesperson_name?: string | null }) => t.salesperson_name).filter((n): n is string => !!n))));
           }
         }
       }
@@ -571,20 +571,20 @@ export default function UserDashboard() {
           {/* Right Side - 2x2 Grid of Navigation Boxes */}
           <div className="lg:w-2/3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Subscriptions Box */}
+              {/* Recordings Box */}
               <div
                 onClick={() => handleBoxClick('transcripts')}
                 className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow border-2 border-transparent hover:border-success-gold"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-midnight-blue">Subscriptions</h3>
+                  <h3 className="text-xl font-semibold text-midnight-blue">Recordings</h3>
                   <svg className="w-6 h-6 text-success-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
                 </div>
                 <div className="space-y-2">
-                  {subscribedSalespeople.length > 0 ? (
-                    subscribedSalespeople.slice(0, 3).map((name, index) => (
+                  {repNames.length > 0 ? (
+                    repNames.slice(0, 3).map((name, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-success-gold to-amber-600 flex items-center justify-center text-white text-sm font-bold">
                           {name.charAt(0)}
@@ -593,10 +593,10 @@ export default function UserDashboard() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-sm text-steel-gray">No subscriptions yet</p>
+                    <p className="text-sm text-steel-gray">No recordings yet</p>
                   )}
-                  {subscribedSalespeople.length > 3 && (
-                    <p className="text-xs text-steel-gray">+{subscribedSalespeople.length - 3} more</p>
+                  {repNames.length > 3 && (
+                    <p className="text-xs text-steel-gray">+{repNames.length - 3} more</p>
                   )}
                 </div>
               </div>

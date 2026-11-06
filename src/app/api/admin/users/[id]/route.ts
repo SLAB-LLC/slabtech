@@ -59,25 +59,9 @@ export async function GET(
       .order('logged_in_at', { ascending: false })
       .limit(50);
 
-    // Get assigned transcripts
-    const { data: assignments } = await serviceSupabase
-      .from('transcript_assignments')
-      .select(`
-        id,
-        assigned_at,
-        transcripts (
-          id,
-          original_filename,
-          salesperson_name,
-          created_at
-        )
-      `)
-      .eq('user_id', id);
-
     return NextResponse.json({
       profile,
       loginHistory: loginHistory || [],
-      assignments: assignments || [],
     });
   } catch (error: any) {
     console.error('Error fetching user:', error);

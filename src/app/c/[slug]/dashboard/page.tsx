@@ -43,7 +43,7 @@ export default function CompanyDashboard() {
   const [userName, setUserName] = useState('');
   const [expandedSalespeople, setExpandedSalespeople] = useState<Set<string>>(new Set());
   const [salespeopleProfiles, setSalespeopleProfiles] = useState<Record<string, Salesperson>>({});
-  const [subscribedSalespeople, setSubscribedSalespeople] = useState<string[]>([]);
+  const [repNames, setRepNames] = useState<string[]>([]);
   const [streakData, setStreakData] = useState<{
     current_streak: number;
     longest_streak: number;
@@ -165,7 +165,6 @@ export default function CompanyDashboard() {
           .eq('user_id', user.id);
 
         const salespersonNames = subscriptions?.map(s => s.salesperson_name) || [];
-        setSubscribedSalespeople(salespersonNames);
 
         // 3. Get transcript IDs for subscribed salespeople
         let subscribedIds: string[] = [];
@@ -191,6 +190,7 @@ export default function CompanyDashboard() {
 
           if (transcriptData) {
             setTranscripts(transcriptData);
+            setRepNames(Array.from(new Set(transcriptData.map((t: { salesperson_name?: string | null }) => t.salesperson_name).filter((n): n is string => !!n))));
           }
         }
       }
@@ -841,7 +841,7 @@ export default function CompanyDashboard() {
           {/* Right Side - Grid of Navigation Boxes */}
           <div className="lg:w-2/3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Subscriptions Box */}
+              {/* Recordings Box */}
               <div
                 onClick={() => !transcriptsLock.locked && handleBoxClick('transcripts')}
                 className={`bg-white rounded-lg shadow p-6 transition-shadow border-2 ${
@@ -854,7 +854,7 @@ export default function CompanyDashboard() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xl font-semibold text-midnight-blue">Subscriptions</h3>
+                    <h3 className="text-xl font-semibold text-midnight-blue">Recordings</h3>
                     {transcriptsLock.locked && <span className="text-xl">🔒</span>}
                   </div>
                   <svg className="w-6 h-6" style={{ color: 'var(--company-primary)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -870,8 +870,8 @@ export default function CompanyDashboard() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {subscribedSalespeople.length > 0 ? (
-                      subscribedSalespeople.slice(0, 3).map((name, index) => (
+                    {repNames.length > 0 ? (
+                      repNames.slice(0, 3).map((name, index) => (
                         <div key={index} className="flex items-center gap-2">
                           <div
                             className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
@@ -885,10 +885,10 @@ export default function CompanyDashboard() {
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-steel-gray">No subscriptions yet</p>
+                      <p className="text-sm text-steel-gray">No recordings yet</p>
                     )}
-                    {subscribedSalespeople.length > 3 && (
-                      <p className="text-xs text-steel-gray">+{subscribedSalespeople.length - 3} more</p>
+                    {repNames.length > 3 && (
+                      <p className="text-xs text-steel-gray">+{repNames.length - 3} more</p>
                     )}
                   </div>
                 )}
