@@ -6,6 +6,7 @@ import { Heading, Text, Card } from '@/components'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { CreateAccountModal, RoleLevelPicker } from '@/components/users/AccountControls'
+import { ResetPasswordModal } from '@/components/users/ResetPasswordModal'
 
 interface UserProfile {
   id: string
@@ -30,6 +31,7 @@ export default function CompanyUsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([])
   const [company, setCompany] = useState<Company | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [resetting, setResetting] = useState<UserProfile | null>(null)
   const [me, setMe] = useState<{ id: string; role: string } | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -207,6 +209,14 @@ export default function CompanyUsersPage() {
                         >
                           View Details
                         </Link>
+                        {user.role !== 'super_admin' && (
+                          <button
+                            onClick={() => setResetting(user)}
+                            className="text-sm font-medium text-gray-500 hover:text-gray-700 hover:underline"
+                          >
+                            Reset password
+                          </button>
+                        )}
                         <button
                           onClick={() => handleToggleActive(user.id, user.is_active)}
                           className="text-sm font-medium text-gray-500 hover:text-gray-700 hover:underline"
@@ -222,6 +232,15 @@ export default function CompanyUsersPage() {
           </div>
         )}
       </div>
+
+      {resetting && (
+        <ResetPasswordModal
+          userId={resetting.id}
+          name={resetting.display_name || resetting.email}
+          email={resetting.email}
+          onClose={() => setResetting(null)}
+        />
+      )}
 
       {/* Create User Modal: the same form SLAB admins use */}
       {showCreateModal && me && (

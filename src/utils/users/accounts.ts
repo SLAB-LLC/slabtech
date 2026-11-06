@@ -139,13 +139,7 @@ export interface AccountChanges {
 /** An owner or SLAB admin changing an account */
 export async function updateAccount(actor: Actor, targetId: string, body: AccountChanges) {
   const service = createServiceRoleClient()
-  const { data: target } = await service.from('user_profiles').select('id, role, company_id').eq('id', targetId).single()
-  if (!target) throw new AccountError('User not found', 404)
-  if (actor.role !== 'super_admin') {
-    if (target.company_id !== actor.company_id) throw new AccountError('Forbidden', 403)
-    // Owners can't touch SLAB admins
-    if (target.role === 'super_admin') throw new AccountError('Forbidden', 403)
-  }
+  await loadManagedTarget(actor, targetId)
 
   const updates: Record<string, unknown> = {}
   if (typeof body.is_active === 'boolean') updates.is_active = body.is_active
@@ -163,6 +157,27 @@ export async function updateAccount(actor: Actor, targetId: string, body: Accoun
 
   updates.updated_at = new Date().toISOString()
   const { error } = await service.from('user_profiles').update(updates).eq('id', targetId)
+  if (error) throw new AccountError(error.message, 500)
+}
+
+/** Who an actor may manage: SLAB admins anyone, owners their own company's non-admins */
+async function loadManagedTarget(actor: Actor, targetId: string) {
+  const service = createServiceRoleClient()
+  const { data: target } = await service.from('user_profiles').select('id, role, company_id').eq('id', targetId).single()
+  if (!target) throw new AccountError('User not found', 404)
+  if (actor.role !== 'super_admin') {
+    if (target.company_id !== actor.company_id) throw new AccountError('Forbidden', 403)
+    if (target.role === 'super_admin') throw new AccountError('Forbidden', 403)
+  }
+  return target
+}
+
+/** An owner or SLAB admin setting a new password for someone who forgot theirs */
+export async function setAccountPassword(actor: Actor, targetId: string, password: unknown) {
+  const pw = String(password ?? '')
+  if (pw.length < 6) throw new AccountError('Password must be at least 6 characters')
+  await loadManagedTarget(actor, targetId)
+  const { error } = await createServiceRoleClient().auth.admin.updateUserById(targetId, { password: pw })
   if (error) throw new AccountError(error.message, 500)
 }
 

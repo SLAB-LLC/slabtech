@@ -4,6 +4,17 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ActivityTrackingProvider } from '@/components/ActivityTrackingProvider'
 
+const NAV: [string, string][] = [
+  ['/admin', 'Dashboard'],
+  ['/companies', 'Companies'],
+  ['/dashboard', 'Transcripts'],
+  ['/users', 'Users'],
+  ['/usage-analytics', 'Usage'],
+  ['/config', 'Config'],
+  ['/purchase-inquiries', 'Inquiries'],
+  ['/notifications', 'Notifications'],
+]
+
 export default async function AdminLayout({
   children,
 }: {
@@ -67,64 +78,15 @@ export default async function AdminLayout({
                   />
                 </Link>
                 <div className="hidden md:flex items-center gap-6">
-                  <Link
-                    href="/admin"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/companies"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Companies
-                  </Link>
-                  <Link
-                    href="/dashboard"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Transcripts
-                  </Link>
-                  <Link
-                    href="/users"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Users
-                  </Link>
-                  <Link
-                    href="/usage-analytics"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Usage
-                  </Link>
-                  <Link
-                    href="/config"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Config
-                  </Link>
-                  <Link
-                    href="/purchase-inquiries"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Inquiries
-                  </Link>
-                  <Link
-                    href="/big-five"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Big Five
-                  </Link>
-                  <Link
-                    href="/notifications"
-                    className="text-midnight-blue hover:text-success-gold font-medium transition-colors"
-                  >
-                    Notifications
-                  </Link>
+                  {NAV.map(([href, label]) => (
+                    <Link key={href} href={href} className="text-midnight-blue hover:text-success-gold font-medium transition-colors">
+                      {label}
+                    </Link>
+                  ))}
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-steel-gray">{user.email}</span>
+                <span className="hidden lg:inline text-sm text-steel-gray">{user.email}</span>
                 <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
                   Super Admin
                 </span>
@@ -137,6 +99,14 @@ export default async function AdminLayout({
                   </button>
                 </form>
               </div>
+            </div>
+            {/* Phones: the same links in a row you can swipe */}
+            <div className="md:hidden flex gap-5 overflow-x-auto pb-3 -mx-4 px-4 text-sm whitespace-nowrap">
+              {NAV.map(([href, label]) => (
+                <Link key={href} href={href} className="text-midnight-blue hover:text-success-gold font-medium">
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
         </nav>
