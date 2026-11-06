@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
     const isAdminRoute = path.startsWith('/admin') || path.startsWith('/dashboard') ||
       path.startsWith('/users') || path.startsWith('/config') || path.startsWith('/transcripts') ||
       path.startsWith('/companies') || path.startsWith('/usage-analytics') ||
-      path.startsWith('/purchase-inquiries') || path.startsWith('/big-five') ||
+      path.startsWith('/purchase-inquiries') ||
       path.startsWith('/notifications') || path.startsWith('/upload')
     const isMaintenancePage = path.startsWith('/maintenance')
     const isApiRoute = path.startsWith('/api/')
