@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const service = createServiceRoleClient()
     const { data: company } = await service
       .from('companies')
-      .select('id, slug, name, billing_email, stripe_customer_id')
+      .select('id, slug, name, billing_email, stripe_customer_id, billing_start_date')
       .eq('id', companyId)
       .single()
     if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
@@ -38,7 +38,12 @@ export async function POST(request: NextRequest) {
     if (process.env.STRIPE_PRICE_AUDIO_DAY) lineItems.push({ price: process.env.STRIPE_PRICE_AUDIO_DAY })
 
     const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
-    const back = `${origin}/c/${company.slug}/dashboard`
+    const back = `${origin}/c/${company.slug}/billing`
+
+    // Free until billing_start_date (Ace: 2027-01-01): Stripe saves the payment method
+    // now and sends the first invoice on that date. Stripe needs it at least 2 days out.
+    const startsAt = company.billing_start_date ? Date.parse(`${company.billing_start_date}T07:00:00Z`) : 0
+    const trialEnd = startsAt > Date.now() + 2 * 86400_000 ? Math.floor(startsAt / 1000) : undefined
 
     const session = await getStripe().checkout.sessions.create({
       ui_mode: 'hosted_page',
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
         : company.billing_email
           ? { customer_email: company.billing_email }
           : {}),
-      subscription_data: { metadata: { company_id: company.id } },
+      subscription_data: { metadata: { company_id: company.id }, ...(trialEnd ? { trial_end: trialEnd } : {}) },
       metadata: { company_id: company.id },
     })
 
