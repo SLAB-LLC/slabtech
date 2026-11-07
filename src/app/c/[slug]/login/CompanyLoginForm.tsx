@@ -12,7 +12,7 @@ interface Company {
   secondary_color: string
 }
 
-export default function CompanyLoginForm({ company }: { company: Company }) {
+export default function CompanyLoginForm({ company, next }: { company: Company; next?: string }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -40,8 +40,7 @@ export default function CompanyLoginForm({ company }: { company: Company }) {
         console.error('Failed to log login:', err)
       )
 
-      // Redirect to company dashboard
-      router.push(`/c/${company.slug}/dashboard`)
+      router.push(next || `/c/${company.slug}/dashboard`)
       router.refresh()
     } catch (err) {
       console.error('Login error:', err)
