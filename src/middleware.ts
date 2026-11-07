@@ -61,7 +61,9 @@ export async function middleware(request: NextRequest) {
 
     // If not logged in, redirect to company login
     if (!user) {
-      return NextResponse.redirect(new URL(`/c/${companySlug}/login`, request.url))
+      const loginUrl = new URL(`/c/${companySlug}/login`, request.url)
+      loginUrl.searchParams.set('next', request.nextUrl.pathname)
+      return NextResponse.redirect(loginUrl)
     }
 
     // Verify user belongs to this company (unless super admin)

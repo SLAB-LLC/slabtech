@@ -2,8 +2,17 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import CompanyLoginForm from './CompanyLoginForm'
 
-export default async function CompanyLoginPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CompanyLoginPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ next?: string }>
+}) {
   const { slug } = await params
+  // Where to go after signing in (e.g. the Billing page the app links to); only pages inside this company
+  const { next: requested } = await searchParams
+  const next = requested && requested.startsWith(`/c/${slug}/`) && !requested.includes('//') ? requested : `/c/${slug}/dashboard`
   const supabase = await createClient()
 
   // Fetch company data
@@ -31,9 +40,8 @@ export default async function CompanyLoginPage({ params }: { params: Promise<{ s
   } = await supabase.auth.getUser()
 
   if (user) {
-    // Already authenticated, redirect to dashboard
-    redirect(`/c/${slug}/dashboard`)
+    redirect(next)
   }
 
-  return <CompanyLoginForm company={company} />
+  return <CompanyLoginForm company={company} next={next} />
 }
