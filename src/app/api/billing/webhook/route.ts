@@ -36,6 +36,14 @@ export async function POST(request: NextRequest) {
           ...(session.customer_details?.email ? { billing_email: session.customer_details.email } : {}),
         })
         .eq('id', companyId)
+      // Usage billing starts today unless a start date was already set (e.g. Ace: 2027-01-01)
+      if (!error) {
+        await service
+          .from('companies')
+          .update({ billing_start_date: new Date().toISOString().slice(0, 10) })
+          .eq('id', companyId)
+          .is('billing_start_date', null)
+      }
       if (error) {
         console.error('Saving Stripe checkout failed:', error)
         return NextResponse.json({ error: 'Save failed' }, { status: 500 })

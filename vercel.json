@@ -6,5 +6,11 @@
     }
   },
   "buildCommand": "npm run build",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "crons": [
+    {
+      "path": "/api/billing/report-usage",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }

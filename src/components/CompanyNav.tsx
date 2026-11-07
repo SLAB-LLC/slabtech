@@ -72,6 +72,14 @@ export function CompanyNav({ slug, isCompanyAdmin, primaryColor, secondaryColor 
             >
               Leaderboard
             </Link>
+            <Link
+              href={`/c/${slug}/billing`}
+              style={getLinkStyle('billing')}
+              onMouseEnter={() => setHoveredLink('billing')}
+              onMouseLeave={() => setHoveredLink(null)}
+            >
+              Billing
+            </Link>
           </>
         )}
       </div>

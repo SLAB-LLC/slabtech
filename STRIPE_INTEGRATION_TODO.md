@@ -49,7 +49,7 @@ These parameters were configured in Checkout Studio and are already set correctl
    - `STRIPE_PRICE_PLATFORM`, `STRIPE_PRICE_AUDIO_DAY` (the `price_...` IDs from step 2)
    - `STRIPE_PUBLISHABLE_KEY` isn't used yet (hosted checkout needs no browser key) but is listed for later.
 4. **Add the webhook** (Developers > Webhooks > Add endpoint):
-   - URL: `https://slabtraining.com/api/billing/webhook`
+   - URL: `https://www.slabtraining.com/api/billing/webhook`
    - Events: `checkout.session.completed`, `customer.subscription.deleted`
    - Copy its signing secret into `STRIPE_WEBHOOK_SECRET`.
 5. **Turn on payment methods** (Settings > Payment methods): Cards and ACH Direct Debit.
@@ -74,12 +74,16 @@ sql/stripe-billing-migration.sql          companies.stripe_customer_id / stripe_
 
 Use test mode keys (`sk_test_...`). Test card `4242 4242 4242 4242`, any future date, any CVC. For ACH in test mode, choose the test bank on the checkout page. To send webhooks to your laptop: `stripe listen --forward-to localhost:3000/api/billing/webhook`.
 
-## Next steps (not built yet)
+## Usage billing (rep audio days)
 
-- **A "Set up billing" button** on the company dashboard (and in the SLAB admin Companies page) that posts to `/api/billing/checkout`.
-- **Report audio days to Stripe**: a daily Vercel cron that counts each company's new rep audio days from `vault_days` and sends them to the `rep_audio_days` meter, so they show up on the next invoice.
-- **Billing portal link** so owners can see invoices and change their bank account.
-- **Ace's start date**: Ace is free until Jan 1, 2027. Either create Ace's subscription by hand in the Stripe Dashboard with a Jan 1 start, or add `subscription_data.trial_end` for them.
+Built: a **Billing** page for owners (`/c/{slug}/billing`) with "Set up billing" / "Manage billing", and a daily cron that sends billable audio days to Stripe.
+
+1. Run [sql/stripe-usage-migration.sql](sql/stripe-usage-migration.sql) in Supabase.
+2. In Vercel, add `CRON_SECRET` (any long random string) and, if your meter's **event name** isn't `rep_audio_days`, set `STRIPE_METER_EVENT` to it (Stripe: Billing > Meters > your meter).
+3. Stripe: Settings > Billing > **Customer portal** > Save once, so "Manage billing" works.
+4. For Ace, before they click "Set up billing": `UPDATE companies SET billing_start_date = '2027-01-01' WHERE slug = '<ace slug>';` Checkout then saves their bank/card now and first charges Jan 1. Audio days published before that date are free.
+
+A billable audio day = one rep + one recording date, published to the company's own Vault on or after `billing_start_date`, billed in the month it's published.
 
 ## Resources
 
