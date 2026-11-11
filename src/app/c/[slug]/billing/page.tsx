@@ -6,6 +6,7 @@ import { Container } from '@/components'
 
 const PLATFORM_FEE = 300
 const AUDIO_DAY_FEE = 8
+const ACTIVE_REP_FEE = 5
 
 function formatDate(d: string) {
   return new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -31,7 +32,7 @@ export default async function CompanyBillingPage({
   const service = createServiceRoleClient()
   const { data: company } = await service
     .from('companies')
-    .select('id, name, billing_status, billing_email, billing_start_date, stripe_customer_id, stripe_subscription_id')
+    .select('*') // '*' so this still works before billing_plan exists
     .eq('slug', slug)
     .single()
   if (!company || (profile?.role !== 'super_admin' && company.id !== profile?.company_id)) redirect(`/c/${slug}/dashboard`)
@@ -45,6 +46,26 @@ export default async function CompanyBillingPage({
     .eq('company_id', company.id)
     .gte('counted_at', monthStart.toISOString())
   const audioDays = count ?? 0
+
+  // Per-rep plan: show this month's billable peak, or today's active count before billing starts
+  const perRep = company.billing_plan === 'per_rep'
+  let activeReps = 0
+  if (perRep) {
+    const { count: current } = await service
+      .from('user_profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('company_id', company.id)
+      .eq('is_active', true)
+      .neq('role', 'super_admin')
+    const { data: peakRow } = await service
+      .from('billing_active_reps')
+      .select('peak')
+      .eq('company_id', company.id)
+      .order('month', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    activeReps = Math.max(current ?? 0, peakRow?.peak ?? 0)
+  }
 
   const today = new Date().toISOString().slice(0, 10)
   const subscribed = !!company.stripe_subscription_id && company.billing_status !== 'cancelled'
@@ -88,13 +109,25 @@ export default async function CompanyBillingPage({
             <p className="mt-1 text-lg font-semibold text-gray-900">{audioDays}</p>
             <p className="text-xs text-gray-500">${AUDIO_DAY_FEE} each, billed next month</p>
           </div>
-          <div className="rounded-lg border border-gray-200 bg-white p-5">
-            <p className="text-sm text-gray-500">Monthly platform fee</p>
-            <p className="mt-1 text-lg font-semibold text-gray-900">${PLATFORM_FEE}</p>
-            <p className="text-xs text-gray-500">
-              {freeUntil ? `First charge ${formatDate(freeUntil)}` : 'Billed on the 1st'}
-            </p>
-          </div>
+          {perRep ? (
+            <div className="rounded-lg border border-gray-200 bg-white p-5">
+              <p className="text-sm text-gray-500">Active reps in {monthName}</p>
+              <p className="mt-1 text-lg font-semibold text-gray-900">
+                {activeReps} &times; ${ACTIVE_REP_FEE} = ${activeReps * ACTIVE_REP_FEE}
+              </p>
+              <p className="text-xs text-gray-500">
+                {freeUntil ? `Free trial until ${formatDate(freeUntil)}` : 'Peak for the month, billed next month'}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-gray-200 bg-white p-5">
+              <p className="text-sm text-gray-500">Monthly platform fee</p>
+              <p className="mt-1 text-lg font-semibold text-gray-900">${PLATFORM_FEE}</p>
+              <p className="text-xs text-gray-500">
+                {freeUntil ? `First charge ${formatDate(freeUntil)}` : 'Billed on the 1st'}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-5">
