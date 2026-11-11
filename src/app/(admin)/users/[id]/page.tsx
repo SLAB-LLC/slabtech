@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { Heading, Text, Container } from '@/components';
 import { ResetPasswordModal } from '@/components/users/ResetPasswordModal';
+import { GoldenDoorCard } from '@/components/users/GoldenDoorCard';
 import { ALL_ROLES, ROLE_LABELS, roleLabel, levelLabel } from '@/utils/users/roles';
 import { vaultRepsFor } from '@/utils/users/vaultAccess';
 
@@ -320,6 +321,8 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
           )}
         </div>
       )}
+
+      {activeTab === 'details' && <GoldenDoorCard userId={id} />}
 
       {activeTab === 'details' && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
