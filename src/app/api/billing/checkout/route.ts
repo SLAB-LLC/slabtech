@@ -26,15 +26,15 @@ export async function POST(request: NextRequest) {
     const service = createServiceRoleClient()
     const { data: company } = await service
       .from('companies')
-      .select('id, slug, name, billing_email, stripe_customer_id, billing_start_date')
+      .select('*') // '*' so this still works before platform_price_id exists
       .eq('id', companyId)
       .single()
     if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
-    // Platform fee (flat monthly) plus, if set, the metered per-rep audio day price
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      { price: process.env.STRIPE_PRICE_PLATFORM || 'price_...', quantity: 1 },
-    ]
+    // Platform fee (flat monthly) plus, if set, the metered per-rep audio day price.
+    // A company with its own deal (ProTerra: $50/mo) has companies.platform_price_id.
+    const platformPrice = company.platform_price_id || process.env.STRIPE_PRICE_PLATFORM || 'price_...'
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{ price: platformPrice, quantity: 1 }]
     if (process.env.STRIPE_PRICE_AUDIO_DAY) lineItems.push({ price: process.env.STRIPE_PRICE_AUDIO_DAY })
 
     const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
