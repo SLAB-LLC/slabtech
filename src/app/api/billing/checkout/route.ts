@@ -26,15 +26,22 @@ export async function POST(request: NextRequest) {
     const service = createServiceRoleClient()
     const { data: company } = await service
       .from('companies')
-      .select('id, slug, name, billing_email, stripe_customer_id, billing_start_date')
+      .select('*') // '*' so this still works before billing_plan exists
       .eq('id', companyId)
       .single()
     if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
-    // Platform fee (flat monthly) plus, if set, the metered per-rep audio day price
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
-      { price: process.env.STRIPE_PRICE_PLATFORM || 'price_...', quantity: 1 },
-    ]
+    // Flat plan: $300/mo platform fee. Per-rep plan: $5 per active rep, metered
+    // (sql/per-rep-billing-migration.sql). Both add the metered audio day price if set.
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
+    if (company.billing_plan === 'per_rep') {
+      if (!process.env.STRIPE_PRICE_ACTIVE_REP) {
+        return NextResponse.json({ error: 'Per-rep price is not set up yet' }, { status: 500 })
+      }
+      lineItems.push({ price: process.env.STRIPE_PRICE_ACTIVE_REP })
+    } else {
+      lineItems.push({ price: process.env.STRIPE_PRICE_PLATFORM || 'price_...', quantity: 1 })
+    }
     if (process.env.STRIPE_PRICE_AUDIO_DAY) lineItems.push({ price: process.env.STRIPE_PRICE_AUDIO_DAY })
 
     const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
