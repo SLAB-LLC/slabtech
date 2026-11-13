@@ -1,4 +1,4 @@
--- Ronin Larsen's Lab: 23 YouTube lessons, one per house, in the order Alston sent them (2026-11-13).
+-- Ronin Larsen's Lab: 22 YouTube lessons, one per house, in the order Alston sent them (2026-11-13; link 7 repeated link 1).
 -- Run once in the Supabase SQL editor. It stops without changing anything if Ronin's Lab already has lessons.
 -- Each lesson plays inside the app and has a 4-question quiz; 3 of 4 right passes and opens the next house.
 
@@ -79,40 +79,30 @@ BEGIN
 
   -- Unit 2: Building value
   INSERT INTO training_playlists (company_id, name, created_at) VALUES (co, 'Building value', now() + interval '1 seconds') RETURNING id INTO pl;
-  -- 7. What every treatment covers  (YouTube: The Fox Service)
-  INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
-    VALUES (co, 'What every treatment covers', 'The service, inside and out: moisture zones, entry points, eaves, barrier and yard.', 'youtube', 'https://www.youtube.com/watch?v=48s_mOnG2F4', 156, now() + interval '7 seconds') RETURNING id INTO v;
-  INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 0);
-  INSERT INTO video_quiz_settings (video_id, quiz_required, passing_score) VALUES (v, true, 75);
-  INSERT INTO video_quiz_questions (video_id, question_text, option_a, option_b, option_c, option_d, correct_answer, position) VALUES
-    (v, 'Inside the home, which areas does the service focus on?', 'Moisture zones like sinks and laundry rooms', 'Closets and bedrooms only', 'The attic only', 'Nothing, it''s outside only', 'A', 0),
-    (v, 'What does the technician sweep off the eaves?', 'Leaves', 'Bird nests', 'Cobwebs and wasp nests', 'Gutter debris', 'C', 1),
-    (v, 'What does the liquid treatment create around the foundation?', 'A moisture seal', 'A protective barrier', 'A bait station', 'A fresh coat of paint', 'B', 2),
-    (v, 'What happens with the granular treatment in the yard?', 'It fertilizes the lawn', 'It only treats flower beds', 'It replaces the liquid barrier', 'Mounds and nests get spot treated while the yard is inspected', 'D', 3);
-  -- 8. Building value around their concern  (YouTube: Building Value)
+  -- 7. Building value around their concern  (YouTube: Building Value)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'Building value around their concern', 'Tailor the pitch to the bug they bring up, and ask open-ended questions.', 'youtube', 'https://www.youtube.com/watch?v=PM8frVbvSiQ', 144, now() + interval '8 seconds') RETURNING id INTO v;
-  INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 1);
+  INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 0);
   INSERT INTO video_quiz_settings (video_id, quiz_required, passing_score) VALUES (v, true, 75);
   INSERT INTO video_quiz_questions (video_id, question_text, option_a, option_b, option_c, option_d, correct_answer, position) VALUES
     (v, 'The customer mentions ants in the backyard. What do you talk about?', 'Wasps and mice too, to cover everything', 'The ants, and where they''re seeing them', 'The price right away', 'The contract length', 'B', 0),
     (v, 'Why tailor the service to the customer''s concern?', 'The more relevant the pitch feels, the more valuable the service becomes', 'It makes the pitch shorter', 'It lets you skip the close', 'It avoids talking about price', 'A', 1),
     (v, 'Which is an open-ended question?', '"Are you seeing any bugs?"', '"Do you want pest control?"', '"Do you have a problem with wasps?"', '"Where are you seeing the ants you mentioned?"', 'D', 2),
     (v, 'Why ask open-ended questions?', 'To fill time', 'To get a quick no', 'They make it a conversation and pinpoint what the customer needs', 'To find out their budget', 'C', 3);
-  -- 9. Assumptive language: when, not if  (YouTube: Assumptive Language)
+  -- 8. Assumptive language: when, not if  (YouTube: Assumptive Language)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'Assumptive language: when, not if', 'Talk as if they''re already getting the service.', 'youtube', 'https://www.youtube.com/watch?v=4gE0hbqBl6o', 62, now() + interval '9 seconds') RETURNING id INTO v;
-  INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 2);
+  INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 1);
   INSERT INTO video_quiz_settings (video_id, quiz_required, passing_score) VALUES (v, true, 75);
   INSERT INTO video_quiz_questions (video_id, question_text, option_a, option_b, option_c, option_d, correct_answer, position) VALUES
     (v, 'Assuming the sale means talking about the service in terms of...', 'If they get it', 'When they get it', 'Whether they can afford it', 'What the neighbors think', 'B', 0),
     (v, 'Which line is assumptive?', '"When my technician comes out, he''ll treat all of your eaves."', '"We dust the eaves of homes."', '"If you sign up, we might treat the eaves."', '"Some customers get their eaves done."', 'A', 1),
     (v, 'Where should you use assumptive language?', 'Only at the close', 'Only with repeat customers', 'Never in role plays', 'All through your pitch and role plays', 'D', 2),
     (v, 'What does assumptive language build while you explain value?', 'Doubt', 'Silence', 'Momentum', 'Objections', 'C', 3);
-  -- 10. Asking for the yes  (YouTube: Closing)
+  -- 9. Asking for the yes  (YouTube: Closing)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'Asking for the yes', 'Closing isn''t pushy. It''s clear, natural and assumptive.', 'youtube', 'https://www.youtube.com/watch?v=Uv7KhrEo92A', 95, now() + interval '10 seconds') RETURNING id INTO v;
-  INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 3);
+  INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 2);
   INSERT INTO video_quiz_settings (video_id, quiz_required, passing_score) VALUES (v, true, 75);
   INSERT INTO video_quiz_questions (video_id, question_text, option_a, option_b, option_c, option_d, correct_answer, position) VALUES
     (v, 'What is the purpose of the close?', 'To pressure the customer', 'To help the customer take the next step', 'To end the conversation', 'To explain the contract', 'B', 0),
@@ -122,7 +112,7 @@ BEGIN
 
   -- Unit 3: Reading objections
   INSERT INTO training_playlists (company_id, name, created_at) VALUES (co, 'Reading objections', now() + interval '2 seconds') RETURNING id INTO pl;
-  -- 11. Smoke screens, real concerns and hard nos  (YouTube: Types of Objections)
+  -- 10. Smoke screens, real concerns and hard nos  (YouTube: Types of Objections)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'Smoke screens, real concerns and hard nos', 'The three kinds of no, and how to spend your time on each.', 'youtube', 'https://www.youtube.com/watch?v=DxeObWsu8Nk', 361, now() + interval '11 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 0);
@@ -132,7 +122,7 @@ BEGIN
     (v, '"Can I get a card?" right at the start is usually a...', 'Smoke screen', 'Resolvable concern', 'Situational roadblock', 'Buying sign', 'A', 1),
     (v, '"Is it safe for my dog?" is a...', 'Smoke screen', 'Hard no', 'Reason to leave', 'Resolvable concern', 'D', 2),
     (v, 'A U-Haul is in the driveway and they say they''re moving. What do you do?', 'Push past three nos', 'Offer a bigger discount', 'It''s a situational roadblock: move on', 'Ask for their spouse', 'C', 3);
-  -- 12. The five most common objections  (YouTube: 5 Common Objections)
+  -- 11. The five most common objections  (YouTube: 5 Common Objections)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'The five most common objections', 'Already have a company, spouse, not interested, do-it-yourself, and price.', 'youtube', 'https://www.youtube.com/watch?v=2xrxJILNIZ4', 83, now() + interval '12 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 1);
@@ -142,7 +132,7 @@ BEGIN
     (v, 'On the doors, an objection is...', 'The end of the conversation', 'A reason to leave', 'The beginning of the conversation', 'Something to ignore', 'C', 1),
     (v, 'How do the best reps treat objections?', 'They embrace them', 'They avoid them', 'They argue with them', 'They hand over a card', 'A', 2),
     (v, 'Objections aren''t rejections. They''re...', 'Smoke screens', 'Hard nos', 'Wasted time', 'Buying signs in disguise', 'D', 3);
-  -- 13. The switchover  (YouTube: The Switch Over)
+  -- 12. The switchover  (YouTube: The Switch Over)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'The switchover', 'They already have a company, so they already see the value. Show them why to upgrade.', 'youtube', 'https://www.youtube.com/watch?v=HsDRsATOKoI', 130, now() + interval '13 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 2);
@@ -152,7 +142,7 @@ BEGIN
     (v, 'What tone should you use?', 'Challenging', 'Casual and confident, conversational', 'Fast and pushy', 'Quiet and apologetic', 'B', 1),
     (v, 'What''s often true once you ask about their current company?', 'They pay much less', 'They love their technician', 'It''s only a lawn company, nothing for the home', 'They have a lifetime contract', 'C', 2),
     (v, 'How should you ask about their current service?', 'Like an interview, one question after another', 'Don''t ask, just pitch', 'Ask for their bill', 'Casual questions, never sounding like an interrogation', 'D', 3);
-  -- 14. "I do it myself"  (YouTube: "I Do It Myself...")
+  -- 13. "I do it myself"  (YouTube: "I Do It Myself...")
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, '"I do it myself"', 'The DIY customer: find what they''re fighting, then show the bigger value.', 'youtube', 'https://www.youtube.com/watch?v=zMhfzRUdgeI', 77, now() + interval '14 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 3);
@@ -165,7 +155,7 @@ BEGIN
 
   -- Unit 4: Overcoming objections
   INSERT INTO training_playlists (company_id, name, created_at) VALUES (co, 'Overcoming objections', now() + interval '3 seconds') RETURNING id INTO pl;
-  -- 15. "It's too expensive"  (YouTube: "Its Too Expensive...")
+  -- 14. "It's too expensive"  (YouTube: "Its Too Expensive...")
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, '"It''s too expensive"', 'Price concerns in their many forms, and how to answer with value.', 'youtube', 'https://www.youtube.com/watch?v=1l-eBwGH5kU', 50, now() + interval '15 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 0);
@@ -175,7 +165,7 @@ BEGIN
     (v, 'How does the example rep start the response?', 'By cutting the price in half', 'By agreeing it''s expensive and leaving', '"I hear you", and if it would stop you paying the mortgage it may not be a fit right now', 'By talking about the contract', 'C', 1),
     (v, 'Why do neighbors end up jumping on?', 'It''s free', 'Once they see the value and the discounts, it''s a no-brainer', 'Their HOA requires it', 'They lost a bet', 'B', 2),
     (v, 'What''s the response built on?', 'Pressure', 'A lower price', 'Skipping the objection', 'Showing value and the discount', 'D', 3);
-  -- 16. "Not interested"  (YouTube: "Not Interested...")
+  -- 15. "Not interested"  (YouTube: "Not Interested...")
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, '"Not interested"', 'Smoke screen, real concern or hard no: figure out which one it is.', 'youtube', 'https://www.youtube.com/watch?v=b3txso3oFxU', 91, now() + interval '16 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 1);
@@ -185,7 +175,7 @@ BEGIN
     (v, 'What does "not interested" usually mean?', 'They don''t understand the value yet. It''s a knee-jerk reaction', 'They hate pest control', 'They already signed with you', 'They want a bigger discount', 'A', 1),
     (v, 'It sounds like a resolvable "not interested." What do you ask?', '"Why not?"', '"Are you sure?"', '"Can I come back later?"', '"Do you guys already have a company or have you been doing it yourself?"', 'D', 2),
     (v, 'Why not just leave a card?', 'Cards cost money', 'It''s against the rules', 'Cards get tossed on the counter, they never call, and they miss the discount', 'Cards are for managers only', 'C', 3);
-  -- 17. The spouse objection  (YouTube: Spouse Objection)
+  -- 16. The spouse objection  (YouTube: Spouse Objection)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'The spouse objection', 'Prevent it by qualifying early. Handle it, or set a return appointment.', 'youtube', 'https://www.youtube.com/watch?v=6jHsD8k3pVA', 261, now() + interval '17 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 2);
@@ -195,7 +185,7 @@ BEGIN
     (v, 'If you can''t reach the real decision maker, what do you do?', 'Leave a card', 'Close the person you''re with anyway', 'Find out when they''ll be home and set a return appointment', 'Move on for good', 'C', 1),
     (v, 'When the spouse comes out, where do you start?', 'At the price', 'From your intro, going over everything', 'At the contract', 'With the welcome sheet', 'B', 2),
     (v, 'When is it best to set callbacks?', 'First thing in the morning', 'At lunchtime', 'Any time they say', 'After dark, on your way out', 'D', 3);
-  -- 18. ARAC: acknowledge, resolve, ace, close  (YouTube: Overcoming Objections I)
+  -- 17. ARAC: acknowledge, resolve, ace, close  (YouTube: Overcoming Objections I)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'ARAC: acknowledge, resolve, ace, close', 'Four steps for any objection, and never stop at the answer.', 'youtube', 'https://www.youtube.com/watch?v=bE2IK0hP6Yk', 202, now() + interval '18 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 3);
@@ -205,7 +195,7 @@ BEGIN
     (v, 'How should you acknowledge an objection?', 'Without validating it: they feel heard, not right to say no', 'By agreeing they made the right choice', 'By ignoring it', 'By repeating the price', 'A', 1),
     (v, 'Which is an "ace"?', 'Raising the price', 'Asking for their spouse', 'Leaving a card', 'Throwing in the shed or garage for free', 'D', 2),
     (v, 'What should you avoid after answering their concern?', 'Asking for their phone number', 'Moving forward in the pitch', 'Waiting in silence', 'Mentioning neighbors', 'C', 3);
-  -- 19. Feel, felt, found  (YouTube: Overcoming Objections II)
+  -- 18. Feel, felt, found  (YouTube: Overcoming Objections II)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'Feel, felt, found', 'Show them others felt the same way, and what they found.', 'youtube', 'https://www.youtube.com/watch?v=KrE_uWnlias', 142, now() + interval '19 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 4);
@@ -218,7 +208,7 @@ BEGIN
 
   -- Unit 5: Locking it in
   INSERT INTO training_playlists (company_id, name, created_at) VALUES (co, 'Locking it in', now() + interval '4 seconds') RETURNING id INTO pl;
-  -- 20. The welcome sheet keeps customers  (YouTube: The Welcome Sheet)
+  -- 19. The welcome sheet keeps customers  (YouTube: The Welcome Sheet)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'The welcome sheet keeps customers', 'Set expectations after every sale and your cancellations drop.', 'youtube', 'https://www.youtube.com/watch?v=8NiiIC6uMVI', 202, now() + interval '20 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 0);
@@ -228,7 +218,7 @@ BEGIN
     (v, 'When do you go over the welcome sheet?', 'After every sale, whatever the service', 'Only for big accounts', 'Only if they ask', 'At the first service', 'A', 1),
     (v, 'After the digital welcome sheet was added, about what was Cameron''s cancellation rate?', '10%', '25%', '8%', '1.6%', 'D', 2),
     (v, 'How should the customer sign the paper copy?', 'One signature at the bottom', 'They don''t need to sign', 'Initial every line or checkbox, then sign', 'Sign the back', 'C', 3);
-  -- 21. The top-to-bottom service  (YouTube: The Fox Service II)
+  -- 20. The top-to-bottom service  (YouTube: The Fox Service II)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'The top-to-bottom service', 'Eaves to foundation to yard, and walking them to where they see the bugs.', 'youtube', 'https://www.youtube.com/watch?v=6KLwwivlj6k', 181, now() + interval '21 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 1);
@@ -238,7 +228,7 @@ BEGIN
     (v, 'Why is the foundation treatment so important?', 'It makes the home look newer', 'It''s where most activity gets in, and it leaves a residual barrier', 'It''s the only thing in the contract', 'It treats the lawn too', 'B', 1),
     (v, 'What if they see bugs between quarterly services?', 'They pay for an extra visit', 'They wait for the next quarter', 'They call back anytime at no extra charge', 'They buy spray at the store', 'C', 2),
     (v, 'They mention mice in the shed. What do you do?', 'Talk about wasps instead', 'Promise the mice are gone forever', 'Tell them to ask the technician', 'Walk them to the shed and show how the service handles it', 'D', 3);
-  -- 22. Soft closes and hard closes  (YouTube: Closing II)
+  -- 21. Soft closes and hard closes  (YouTube: Closing II)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'Soft closes and hard closes', 'Close all through the pitch, read their temperature, then lock it in.', 'youtube', 'https://www.youtube.com/watch?v=WkUH-6haDYU', 216, now() + interval '22 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 2);
@@ -248,7 +238,7 @@ BEGIN
     (v, 'What is a soft close?', 'Gauging the customer''s temperature', 'Asking for their card', 'Leaving a flyer', 'Repeating the price', 'A', 1),
     (v, 'Which is a hard close?', '"Do you want the inside done too?"', '"Seen many bugs lately?"', '"Who''s your current company?"', 'Asking for their last name, or credit or debit', 'D', 2),
     (v, 'If you don''t know where to go next in your pitch, what''s the rule of thumb?', 'Start over', 'Leave', 'Close the customer', 'Talk about the neighbors', 'C', 3);
-  -- 23. Walking through the welcome sheet  (YouTube: The Welcome Sheet II)
+  -- 22. Walking through the welcome sheet  (YouTube: The Welcome Sheet II)
   INSERT INTO training_videos (company_id, title, description, video_type, youtube_url, duration, created_at)
     VALUES (co, 'Walking through the welcome sheet', 'Every section, from the guarantee to the signature.', 'youtube', 'https://www.youtube.com/watch?v=4FPB5Fe2bQk', 255, now() + interval '23 seconds') RETURNING id INTO v;
   INSERT INTO playlist_videos (playlist_id, video_id, position) VALUES (pl, v, 3);
@@ -260,7 +250,7 @@ BEGIN
     (v, 'After a treatment, how long should they wait before calling about activity?', 'One day', 'One week', 'Three to four weeks', 'Six months', 'C', 3);
 END $$;
 
--- Check: 23 lessons, 92 questions, in order
+-- Check: 22 lessons, 4 questions each, in order
 SELECT p.name AS unit, pv.position + 1 AS house, tv.title, (SELECT count(*) FROM video_quiz_questions qq WHERE qq.video_id = tv.id) AS questions
 FROM training_videos tv JOIN playlist_videos pv ON pv.video_id = tv.id JOIN training_playlists p ON p.id = pv.playlist_id
 WHERE tv.company_id = (SELECT id FROM companies WHERE name ILIKE 'ronin larsen')
