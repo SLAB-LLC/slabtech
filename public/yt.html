@@ -1,0 +1,38 @@
+<!doctype html>
+<!--
+  YouTube player for the SLAB app. The app's game screen is a local file, so YouTube can't see a website
+  behind an embed made straight from it and refuses to play (error 153, "watch on YouTube"). The app loads
+  this page in its place: the player is embedded from slabtraining.com, which YouTube accepts.
+  Usage: /yt.html?v=VIDEO_ID (&autoplay=1)
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>SLAB video</title>
+<style>
+  html, body { margin:0; height:100%; background:#000; overflow:hidden; }
+  iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  p { color:#bbb; font:14px/1.4 system-ui, sans-serif; text-align:center; margin-top:40vh; }
+</style>
+</head>
+<body>
+<script>
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var id = q.get('v') || '';
+    if (!/^[\w-]{6,20}$/.test(id)) { document.body.innerHTML = '<p>This video isn\'t available.</p>'; return; }
+    var src = 'https://www.youtube.com/embed/' + id + '?playsinline=1&rel=0&modestbranding=1' +
+      (q.get('autoplay') === '1' ? '&autoplay=1' : '') + '&origin=' + encodeURIComponent(location.origin);
+    var f = document.createElement('iframe');
+    f.src = src;
+    f.title = 'Video';
+    f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    f.allowFullscreen = true;
+    f.referrerPolicy = 'strict-origin-when-cross-origin';
+    document.body.appendChild(f);
+  })();
+</script>
+</body>
+</html>
