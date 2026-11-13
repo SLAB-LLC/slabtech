@@ -4,7 +4,7 @@ import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import { canManageCompany } from '@/utils/users/roles'
 import { Container } from '@/components'
 
-const PLATFORM_FEE = 300
+const DEFAULT_PLATFORM_FEE = 300
 const AUDIO_DAY_FEE = 8
 const ACTIVE_REP_FEE = 5
 
@@ -32,7 +32,7 @@ export default async function CompanyBillingPage({
   const service = createServiceRoleClient()
   const { data: company } = await service
     .from('companies')
-    .select('*') // '*' so this still works before billing_plan exists
+    .select('*') // '*' so this still works before billing_plan / platform_fee_cents exist
     .eq('slug', slug)
     .single()
   if (!company || (profile?.role !== 'super_admin' && company.id !== profile?.company_id)) redirect(`/c/${slug}/dashboard`)
@@ -67,6 +67,7 @@ export default async function CompanyBillingPage({
     activeReps = Math.max(current ?? 0, peakRow?.peak ?? 0)
   }
 
+  const platformFee = company.platform_fee_cents != null ? company.platform_fee_cents / 100 : DEFAULT_PLATFORM_FEE
   const today = new Date().toISOString().slice(0, 10)
   const subscribed = !!company.stripe_subscription_id && company.billing_status !== 'cancelled'
   const freeUntil = company.billing_start_date && company.billing_start_date > today ? company.billing_start_date : null
@@ -122,9 +123,13 @@ export default async function CompanyBillingPage({
           ) : (
             <div className="rounded-lg border border-gray-200 bg-white p-5">
               <p className="text-sm text-gray-500">Monthly platform fee</p>
-              <p className="mt-1 text-lg font-semibold text-gray-900">${PLATFORM_FEE}</p>
+              <p className="mt-1 text-lg font-semibold text-gray-900">${platformFee}</p>
               <p className="text-xs text-gray-500">
-                {freeUntil ? `First charge ${formatDate(freeUntil)}` : 'Billed on the 1st'}
+                {freeUntil
+                  ? `First charge ${formatDate(freeUntil)}`
+                  : company.platform_price_id
+                    ? 'Billed monthly from the day you set up billing'
+                    : 'Billed on the 1st'}
               </p>
             </div>
           )}

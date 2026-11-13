@@ -14,6 +14,12 @@ import { NextRequest, NextResponse } from 'next/server'
  *      signed link to the door's audio (play from st to en seconds) and where the full pitch
  *      is in the Vault (the day's vault_days.audio_prefix and the door's number)
  *   or { error: code } where code is 'no_coach' | 'rate_limited' | 'failed'
+ *
+ * Daily limit: each rep gets COACH_DAILY_LIMIT questions per day (env var, default 1), counted
+ * from coach_messages, with the day starting at midnight America/Denver. Past the limit the
+ * route answers 200 { reply: <come back tomorrow>, clips: [], limited: true } before calling
+ * Claude, so no tokens are spent and every app version shows it as a normal chat bubble.
+ * SLAB super admins are not limited.
  */
 
 export const maxDuration = 60
@@ -23,6 +29,8 @@ const MAX_MESSAGES = 30
 const MAX_CHARS = 4000
 const TOP = 4
 const LINK_SECONDS = 12 * 3600
+const DAILY_LIMIT = Math.max(1, parseInt(process.env.COACH_DAILY_LIMIT ?? '', 10) || 1)
+const DAY_TIME_ZONE = 'America/Denver'
 const TAGS = ['price', 'spouse', 'delay', 'diy', 'competitor', 'not_interested', 'no_problem', 'presenting_price', 'opener', 'close']
 
 const SEARCH_TOOL: Anthropic.Tool = {
@@ -99,6 +107,16 @@ ${style}
 ${book}`
 }
 
+/** Midnight today in DAY_TIME_ZONE, as an ISO timestamp */
+function startOfDay(now = new Date()): string {
+  const date = new Intl.DateTimeFormat('en-CA', { timeZone: DAY_TIME_ZONE }).format(now) // YYYY-MM-DD
+  const tz = new Intl.DateTimeFormat('en-US', { timeZone: DAY_TIME_ZONE, timeZoneName: 'longOffset' })
+    .formatToParts(now)
+    .find((p) => p.type === 'timeZoneName')?.value // GMT-07:00
+  const offset = tz?.replace('GMT', '') || '-07:00'
+  return new Date(`${date}T00:00:00${offset}`).toISOString()
+}
+
 async function search(db: SupabaseClient, persona: string, input: unknown): Promise<{ text: string; found: Moment[] }> {
   const inp = input as { tag?: unknown; query?: unknown }
   if (typeof inp?.query !== 'string' || (inp.tag !== 'any' && !TAGS.includes(inp.tag as string))) {
@@ -153,6 +171,29 @@ export async function POST(request: NextRequest) {
   const persona =
     personas?.find((p) => p.name.toLowerCase() === String(body?.coach ?? '').toLowerCase()) ?? personas?.[0]
   if (!persona) return NextResponse.json({ error: 'no_coach' }, { status: 404 })
+
+  // One question a day per rep (COACH_DAILY_LIMIT), checked before any tokens are spent
+  if (profile?.role !== 'super_admin') {
+    const { count, error: countError } = await db
+      .from('coach_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', startOfDay())
+    if (countError) {
+      console.error('Coach daily count failed:', countError)
+      return NextResponse.json({ error: 'failed' }, { status: 500 })
+    }
+    if ((count ?? 0) >= DAILY_LIMIT) {
+      const n = DAILY_LIMIT === 1 ? 'one question' : `${DAILY_LIMIT} questions`
+      return NextResponse.json({
+        reply:
+          `That's your ${n} for today. Go take what we talked about to the doors, ` +
+          `then come back tomorrow and ask me anything.`,
+        clips: [],
+        limited: true,
+      })
+    }
+  }
   const { data: playbook } = await db
     .from('coach_playbook')
     .select('topic, question, answer')
