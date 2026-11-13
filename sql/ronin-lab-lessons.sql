@@ -1,5 +1,6 @@
 -- Ronin Larsen's Lab: 22 YouTube lessons, one per house, in the order Alston sent them (2026-11-13; link 7 repeated link 1).
--- Run once in the Supabase SQL editor. It stops without changing anything if Ronin's Lab already has lessons.
+-- Run once in the Supabase SQL editor. It first removes the 11 old Fox Pest Control test videos, and stops
+-- without changing anything if the new lessons are already there.
 -- Each lesson plays inside the app and has a 4-question quiz; 3 of 4 right passes and opens the next house.
 
 DO $$
@@ -7,11 +8,19 @@ DECLARE
   co uuid;
   pl uuid;
   v uuid;
+  old_n int;
 BEGIN
   SELECT id INTO co FROM companies WHERE name ILIKE 'ronin larsen';
   IF co IS NULL THEN RAISE EXCEPTION 'No company named Ronin Larsen'; END IF;
+
+  -- Clear out the 11 old Fox Pest Control test videos (all dated before today) and any old playlists.
+  -- Their quiz questions and watch history go with them. If the count isn't 11, stop and change nothing.
+  SELECT count(*) INTO old_n FROM training_videos WHERE company_id = co AND created_at < '2026-11-13';
+  IF old_n NOT IN (0, 11) THEN RAISE EXCEPTION 'Expected 11 old test videos, found %; nothing was changed', old_n; END IF;
+  DELETE FROM training_videos WHERE company_id = co AND created_at < '2026-11-13';
+  DELETE FROM training_playlists WHERE company_id = co AND created_at < '2026-11-13';
   IF EXISTS (SELECT 1 FROM training_videos WHERE company_id = co) THEN
-    RAISE EXCEPTION 'Ronin''s Lab already has lessons; nothing was changed';
+    RAISE EXCEPTION 'Ronin''s Lab already has the new lessons; nothing was changed';
   END IF;
 
   -- Unit 1: The approach
