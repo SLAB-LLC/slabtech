@@ -19,7 +19,8 @@ SET logo_url = 'https://www.slabtraining.com/brands/proterra/icon.png',
 WHERE slug = 'proterra';
 
 -- ============================================================================
--- 2. App config: dark field green with the leaf green as the accent, pink gear trim,
+-- 2. App config: black background with the leaf green as the accent, pink gear trim
+--    (SLAB's own logo stays in its true white and orange),
 --    the bug-and-leaf next to SLAB in the top bar and on the opening splash, and the
 --    street running ProTerra's own training once Butch's videos are uploaded.
 -- ============================================================================
@@ -32,21 +33,21 @@ SELECT c.id,
     "statusBar": "light",
     "appStyle": "game",
     "colors": {
-      "background": "#0b120c",
-      "backgroundGradient": ["#060a07", "#0b120c", "#121b13"],
-      "surface": "#141d15",
-      "surfaceRaised": "#1c271d",
+      "background": "#000000",
+      "backgroundGradient": ["#000000", "#050705", "#0a0d0a"],
+      "surface": "#111411",
+      "surfaceRaised": "#1a1f1a",
       "accent": "#37D530",
       "accentSoft": "#10260f",
       "accentLine": "rgba(55,213,48,0.38)",
       "onAccent": "#08110a",
       "text": "#f2f5f0",
       "textMuted": "#9aa59a",
-      "header": "#0b120c",
-      "tabBar": "#0b120c",
+      "header": "#000000",
+      "tabBar": "#000000",
       "success": "#37D530"
     },
-    "gear": { "name": "Proterra", "letters": "PRO", "primary": "#F992A3", "dark": "#2b2f33" },
+    "gear": { "name": "Proterra", "letters": "PRO", "primary": "#F992A3", "dark": "#16181a" },
     "coach": { "name": "Marshall" }
   }'::jsonb,
   '{
