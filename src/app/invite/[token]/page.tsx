@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react'
 import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import InviteAcceptForm from './InviteAcceptForm'
 
@@ -46,5 +47,5 @@ export default async function InvitePage({ params }: { params: Promise<{ token: 
     )
   }
 
-  return <InviteAcceptForm invite={invite as any} />
+  return <InviteAcceptForm invite={invite as unknown as ComponentProps<typeof InviteAcceptForm>['invite']} />
 }
