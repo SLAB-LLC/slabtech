@@ -6,7 +6,7 @@ import { CompanyBrandingProvider } from '@/components/CompanyBrandingProvider'
 import { CompanyNav } from '@/components/CompanyNav'
 import { ActivityTrackingProvider } from '@/components/ActivityTrackingProvider'
 import { CaptureGuard } from '@/components/CaptureGuard'
-import { isCaptureProtected } from '@/utils/captureProtection'
+import { getCaptureProtection } from '@/utils/captureProtection'
 
 export default async function CompanyLayout({
   children,
@@ -58,11 +58,11 @@ export default async function CompanyLayout({
   const secondaryColor = company.secondary_color || '#001199'
   const isCompanyAdmin = profile.role === 'company_admin'
   const isSuperAdmin = profile.role === 'super_admin'
-  const protect = await isCaptureProtected(supabase, profile)
+  const protect = await getCaptureProtection(supabase, user.id, profile)
 
   return (
     <ActivityTrackingProvider>
-      <CaptureGuard enabled={protect} email={user.email ?? ''}>
+      <CaptureGuard enabled={protect.on} watermark={protect.watermark} email={user.email ?? ''}>
       <CompanyBrandingProvider primaryColor={primaryColor} secondaryColor={secondaryColor}>
         <div className="min-h-screen bg-gray-100">
         <nav className="bg-pure-white border-b-2" style={{ borderColor: primaryColor }}>

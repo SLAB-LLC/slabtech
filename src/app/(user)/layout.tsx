@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { ActivityTrackingProvider } from '@/components/ActivityTrackingProvider';
 import { CaptureGuard } from '@/components/CaptureGuard';
-import { isCaptureProtected } from '@/utils/captureProtection';
+import { getCaptureProtection } from '@/utils/captureProtection';
 
 export default async function UserLayout({
   children,
@@ -34,11 +34,11 @@ export default async function UserLayout({
     redirect('/admin');
   }
 
-  const protect = await isCaptureProtected(supabase, profile);
+  const protect = await getCaptureProtection(supabase, user.id, profile);
 
   return (
     <ActivityTrackingProvider>
-      <CaptureGuard enabled={protect} email={user.email ?? ''}>{children}</CaptureGuard>
+      <CaptureGuard enabled={protect.on} watermark={protect.watermark} email={user.email ?? ''}>{children}</CaptureGuard>
     </ActivityTrackingProvider>
   );
 }

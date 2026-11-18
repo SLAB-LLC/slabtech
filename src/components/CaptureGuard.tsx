@@ -7,14 +7,14 @@ import { useEffect, useState } from 'react'
  * (utils/captureProtection.ts).
  *
  * A browser can't truly block screenshots, so this makes any capture traceable and annoying:
- * - a tiled watermark with the viewer's email and the time over every page
+ * - for prospect logins only (watermark), a tiled watermark with the viewer's email and the time
  * - the page blurs when the window loses focus or the tab is hidden (snipping tools, OBS
  *   window pickers and screen-share pickers all take focus first)
  * - the page blacks out while the browser is sharing or recording the screen through
  *   getDisplayMedia
  * - no right-click, text selection, copy, drag, save or print, and PrintScreen clears the clipboard
  */
-export function CaptureGuard({ enabled, email, children }: { enabled: boolean; email: string; children: React.ReactNode }) {
+export function CaptureGuard({ enabled, watermark = false, email, children }: { enabled: boolean; watermark?: boolean; email: string; children: React.ReactNode }) {
   const [hidden, setHidden] = useState(false)
   const [stamp, setStamp] = useState('')
 
@@ -99,7 +99,7 @@ export function CaptureGuard({ enabled, email, children }: { enabled: boolean; e
   return (
     <>
       <div style={{ filter: hidden ? 'blur(24px)' : undefined, transition: 'filter 80ms' }}>{children}</div>
-      <div
+      {watermark && <div
         aria-hidden
         className="capture-guard-mark"
         style={{
@@ -107,7 +107,7 @@ export function CaptureGuard({ enabled, email, children }: { enabled: boolean; e
           backgroundImage: `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`,
           backgroundRepeat: 'repeat',
         }}
-      />
+      />}
       {hidden && (
         <div
           aria-hidden
