@@ -7,11 +7,11 @@ export default async function CompanyLoginPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>
-  searchParams: Promise<{ next?: string }>
+  searchParams: Promise<{ next?: string; reason?: string }>
 }) {
   const { slug } = await params
   // Where to go after signing in (e.g. the Billing page the app links to); only pages inside this company
-  const { next: requested } = await searchParams
+  const { next: requested, reason } = await searchParams
   const next = requested && requested.startsWith(`/c/${slug}/`) && !requested.includes('//') ? requested : `/c/${slug}/dashboard`
   const supabase = await createClient()
 
@@ -43,5 +43,5 @@ export default async function CompanyLoginPage({
     redirect(next)
   }
 
-  return <CompanyLoginForm company={company} next={next} />
+  return <CompanyLoginForm company={company} next={next} signedOutElsewhere={reason === 'elsewhere'} />
 }

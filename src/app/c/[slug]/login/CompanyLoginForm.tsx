@@ -12,7 +12,7 @@ interface Company {
   secondary_color: string
 }
 
-export default function CompanyLoginForm({ company, next }: { company: Company; next?: string }) {
+export default function CompanyLoginForm({ company, next, signedOutElsewhere }: { company: Company; next?: string; signedOutElsewhere?: boolean }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -70,6 +70,16 @@ export default function CompanyLoginForm({ company, next }: { company: Company; 
           {company.name}
         </h1>
         <p className="text-center text-gray-400 mb-6">Sign in to continue</p>
+
+        {/* Signed out because the account signed in on another device (one sign-in at a time) */}
+        {signedOutElsewhere && !error && (
+          <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500 rounded-md">
+            <p className="text-yellow-300 text-sm">
+              You were signed out because your account was signed in on another device. Each account can be used on one
+              device at a time.
+            </p>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (

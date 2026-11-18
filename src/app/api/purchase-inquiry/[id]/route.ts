@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireSuperAdmin } from '@/utils/security/superAdmin'
 
 /**
  * PATCH /api/purchase-inquiry/[id]
@@ -10,6 +11,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await requireSuperAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const body = await request.json()
     const { status } = body

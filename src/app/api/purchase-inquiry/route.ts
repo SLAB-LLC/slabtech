@@ -1,6 +1,7 @@
 import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import { sendInquiryNotification } from '@/utils/notifications/inquiryNotification'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireSuperAdmin } from '@/utils/security/superAdmin'
 
 /**
  * POST /api/purchase-inquiry
@@ -115,6 +116,11 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
+    // Inquiries hold names, emails and phone numbers: SLAB admins only
+    if (!(await requireSuperAdmin())) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Use service role to bypass RLS for admin queries
     const supabase = createServiceRoleClient()
 
