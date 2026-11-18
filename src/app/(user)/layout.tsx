@@ -34,7 +34,7 @@ export default async function UserLayout({
     redirect('/admin');
   }
 
-  const protect = await isCaptureProtected(supabase, user.id, profile);
+  const protect = await isCaptureProtected(supabase, profile);
 
   return (
     <ActivityTrackingProvider>

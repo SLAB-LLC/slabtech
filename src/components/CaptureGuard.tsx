@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Screenshot / screen-recording deterrent for prospect logins (user_profiles.capture_protected
- * or company_app_config.features.captureProtection).
+ * Screenshot / screen-recording deterrent, on for everyone except SLAB super admins
+ * (utils/captureProtection.ts).
  *
  * A browser can't truly block screenshots, so this makes any capture traceable and annoying:
  * - a tiled watermark with the viewer's email and the time over every page

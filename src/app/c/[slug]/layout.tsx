@@ -58,7 +58,7 @@ export default async function CompanyLayout({
   const secondaryColor = company.secondary_color || '#001199'
   const isCompanyAdmin = profile.role === 'company_admin'
   const isSuperAdmin = profile.role === 'super_admin'
-  const protect = await isCaptureProtected(supabase, user.id, profile)
+  const protect = await isCaptureProtected(supabase, profile)
 
   return (
     <ActivityTrackingProvider>

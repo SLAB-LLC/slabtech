@@ -1,10 +1,11 @@
 -- Screenshot / screen-recording protection (2026-11-18).
 -- Run once in the Supabase SQL editor. Safe to run again.
 --
--- 1. user_profiles.capture_protected: when true, the website shows a watermark with the
---    viewer's email and blocks copy/right-click/print, and the app blocks screenshots and
---    screen recordings (black on Android, blank on iOS) with the same watermark.
---    A whole company can be switched on with company_app_config.features.captureProtection.
+-- 1. Capture protection is ON for every user except SLAB super admins (Duncan, 2026-11-18):
+--    the website shows a watermark with the viewer's email and blocks copy/right-click/print,
+--    and the app blocks screenshots and screen recordings (black on Android, blank on iOS).
+--    A company can be switched off with company_app_config.features.captureProtection = false.
+--    user_profiles.capture_protected is kept as a marker for prospect logins.
 -- 2. A guard so people can't edit their own role, company or protection flag through the API.
 --    Before this, the "Admins can update profiles" policy let anyone update every column of
 --    their own row (including role). Admin tools use the service key and are not affected.
