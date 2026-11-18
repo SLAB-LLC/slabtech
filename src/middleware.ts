@@ -47,7 +47,11 @@ export async function middleware(request: NextRequest) {
   // Refresh session
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser()
+  // This browser's sign-in was ended because the account signed in on another device
+  // (one sign-in at a time: sql/login-sharing-protection.sql) or SLAB signed it out
+  const signedOutElsewhere = !user && authError?.code === 'session_not_found'
 
   // Company routes (/c/[slug]/...) require auth and company membership
   if (request.nextUrl.pathname.startsWith('/c/')) {
@@ -63,6 +67,7 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       const loginUrl = new URL(`/c/${companySlug}/login`, request.url)
       loginUrl.searchParams.set('next', request.nextUrl.pathname)
+      if (signedOutElsewhere) loginUrl.searchParams.set('reason', 'elsewhere')
       return NextResponse.redirect(loginUrl)
     }
 
@@ -104,11 +109,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Admin routes (/admin, /dashboard, /users, etc.) - only for super admins and company admins
-  if (request.nextUrl.pathname.startsWith('/admin') ||
-      request.nextUrl.pathname.startsWith('/dashboard') ||
-      request.nextUrl.pathname.startsWith('/users') ||
-      request.nextUrl.pathname.startsWith('/config') ||
-      request.nextUrl.pathname.startsWith('/transcripts')) {
+  const ADMIN_PREFIXES = ['/admin', '/dashboard', '/users', '/config', '/transcripts', '/companies',
+    '/usage-analytics', '/purchase-inquiries', '/notifications', '/upload', '/security']
+  if (ADMIN_PREFIXES.some((prefix) => request.nextUrl.pathname === prefix || request.nextUrl.pathname.startsWith(prefix + '/'))) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -152,6 +155,7 @@ export const config = {
     '/users/:path*',
     '/config/:path*',
     '/transcripts/:path*',
+    '/security/:path*',
     '/((?!_next/static|_next/image|favicon.ico|api/process-audio|api/purchase-inquiry|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4)$).*)',
   ],
 }

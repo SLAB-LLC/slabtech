@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { createClient as createTokenClient } from '@supabase/supabase-js'
 import { checkRateLimit } from '@/utils/rateLimit'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -103,7 +104,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file exists and create a long-lived signed URL for AssemblyAI
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    // Signed as the uploader: storage only lets people link files they uploaded themselves
+    // (sql/security-hardening-2026-11.sql), so nobody can feed in someone else's recording.
+    const storageClient = bearerToken
+      ? createTokenClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+          global: { headers: { Authorization: `Bearer ${bearerToken}` } },
+          auth: { persistSession: false, autoRefreshToken: false },
+        })
+      : supabase
+    const { data: signedUrlData, error: signedUrlError } = await storageClient.storage
       .from('call-recordings')
       .createSignedUrl(filePath, 86400) // 24 hours — gives AssemblyAI plenty of time
 
