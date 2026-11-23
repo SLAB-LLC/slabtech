@@ -6,7 +6,7 @@
 -- companies.billing_plan
 --   'flat'    : $300/mo platform fee (Ace). Default, so existing companies don't change.
 --   'per_rep' : a price per active rep per month. Checkout uses the company's own
---               metered price in platform_price_id (Prodigy $4, with platform_fee_cents = 400)
+--               metered price in platform_price_id (Prodigy $4.99, with platform_fee_cents = 499)
 --               or else STRIPE_PRICE_ACTIVE_REP ($5, Flex). Both plans also pay $8 per rep audio day.
 --               Every per-rep price sits on the same Stripe meter "active_reps".
 --
@@ -71,8 +71,8 @@ $$;
 
 REVOKE ALL ON FUNCTION public.record_active_reps() FROM PUBLIC, anon, authenticated;
 
--- Prodigy ($4 per rep, its own Stripe price on the active_reps meter):
--- UPDATE companies SET billing_plan = 'per_rep', platform_price_id = 'price_...', platform_fee_cents = 400,
+-- Prodigy ($4.99 per rep, its own Stripe price on the active_reps meter):
+-- UPDATE companies SET billing_plan = 'per_rep', platform_price_id = 'price_...', platform_fee_cents = 499,
 --   billing_start_date = '<signing date>' WHERE slug = 'prodigy';
 -- Flex: switch to per-rep billing once their company row exists (slug may differ):
 -- UPDATE companies SET billing_plan = 'per_rep', billing_start_date = '<signing date + 30 days>' WHERE slug = 'flex';

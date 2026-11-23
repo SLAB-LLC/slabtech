@@ -92,11 +92,11 @@ A billable audio day = one rep + one recording date, published to the company's 
 
 ## Per-rep plan (Flex, 2026-11)
 
-Some companies pay **per active rep per month** instead of the $300 flat fee (plus the same $8 audio day): $5 by default (Flex), or the company's own price (Prodigy $4).
+Some companies pay **per active rep per month** instead of the $300 flat fee (plus the same $8 audio day): $5 by default (Flex), or the company's own price (Prodigy $4.99).
 
 1. Run [sql/per-rep-billing-migration.sql](sql/per-rep-billing-migration.sql). It adds `companies.billing_plan` (`flat` default, or `per_rep`), the `billing_active_reps` table, and `record_active_reps()`.
 2. In Stripe, create a usage-based price "Active rep": $5.00 USD per unit, monthly, on a new meter with event name `active_reps` and aggregation **Last** (not Sum). Put the price ID in Vercel as `STRIPE_PRICE_ACTIVE_REP` and redeploy.
 3. For the company: `UPDATE companies SET billing_plan = 'per_rep', billing_start_date = '<trial end>' WHERE slug = '<slug>';` then the owner clicks Set up billing. Stripe holds the first charge until `billing_start_date`.
-4. A company with its own per-rep price (Prodigy $4): add another usage-based price on the **same** `active_reps` meter, then also set `platform_price_id = '<that price id>'` and `platform_fee_cents = 400` (shown on the billing page as the per-rep price).
+4. A company with its own per-rep price (Prodigy $4.99): add another usage-based price on the **same** `active_reps` meter, then also set `platform_price_id = '<that price id>'` and `platform_fee_cents = 499` (shown on the billing page as the per-rep price).
 
 The daily cron records each per-rep company's peak active reps for the calendar month (Denver time) and sends it to the meter, so the invoice charges the month's peak. Active = `user_profiles.is_active` in that company, excluding SLAB super_admins.

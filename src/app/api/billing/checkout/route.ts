@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Flat plan: platform fee ($300/mo, or the company's own deal in platform_price_id,
     // e.g. ProTerra $50/mo). Per-rep plan: a metered price per active rep, the company's
-    // own in platform_price_id (e.g. Prodigy $4) or STRIPE_PRICE_ACTIVE_REP ($5)
+    // own in platform_price_id (e.g. Prodigy $4.99) or STRIPE_PRICE_ACTIVE_REP ($5)
     // (sql/per-rep-billing-migration.sql). Both add the metered audio day price if set.
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
     if (company.billing_plan === 'per_rep') {
