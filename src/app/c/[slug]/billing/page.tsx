@@ -8,6 +8,12 @@ const DEFAULT_PLATFORM_FEE = 300
 const AUDIO_DAY_FEE = 8
 const DEFAULT_ACTIVE_REP_FEE = 5
 
+// $5, $4.99, $249.50 (never $249.5)
+function money(n: number) {
+  const digits = Number.isInteger(n) ? 0 : 2
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+}
+
 function formatDate(d: string) {
   return new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
@@ -116,7 +122,7 @@ export default async function CompanyBillingPage({
             <div className="rounded-lg border border-gray-200 bg-white p-5">
               <p className="text-sm text-gray-500">Active reps in {monthName}</p>
               <p className="mt-1 text-lg font-semibold text-gray-900">
-                {activeReps} &times; ${activeRepFee} = ${activeReps * activeRepFee}
+                {activeReps} &times; {money(activeRepFee)} = {money(activeReps * activeRepFee)}
               </p>
               <p className="text-xs text-gray-500">
                 {freeUntil ? `Free trial until ${formatDate(freeUntil)}` : 'Peak for the month, billed next month'}
