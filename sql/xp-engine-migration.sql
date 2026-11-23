@@ -8,7 +8,7 @@
 -- one-time grants, and records the event.
 --
 -- Reasons and their config keys (defaults in brackets):
---   lesson_complete  xp.lesson [15]            once per lesson (source_id = video id)
+--   lesson_complete  xp.lesson [30]            once per lesson (source_id = video id)
 --   book_pass        xp.book [50]              once per book
 --   boss_win         xp.bossFirstWin [40]      first win per boss; later wins pay
 --                    xp.bossRematch [10]       once per boss per day
@@ -123,7 +123,7 @@ BEGIN
   -- Base amount, one-time rules and daily caps per reason
   CASE p_reason
     WHEN 'lesson_complete' THEN
-      v_base := COALESCE((v_xp->>'lesson')::int, 15);
+      v_base := COALESCE((v_xp->>'lesson')::int, 30);
     WHEN 'book_pass' THEN
       v_base := COALESCE((v_xp->>'book')::int, 50);
     WHEN 'library_open' THEN

@@ -1,6 +1,8 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { ActivityTrackingProvider } from '@/components/ActivityTrackingProvider';
+import { CaptureGuard } from '@/components/CaptureGuard';
+import { getCaptureProtection } from '@/utils/captureProtection';
 
 export default async function UserLayout({
   children,
@@ -17,7 +19,7 @@ export default async function UserLayout({
   // Check if user has a profile and their role
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role, is_active')
+    .select('role, is_active, company_id')
     .eq('id', user.id)
     .single();
 
@@ -32,5 +34,11 @@ export default async function UserLayout({
     redirect('/admin');
   }
 
-  return <ActivityTrackingProvider>{children}</ActivityTrackingProvider>;
+  const protect = await getCaptureProtection(supabase, user.id, profile);
+
+  return (
+    <ActivityTrackingProvider>
+      <CaptureGuard enabled={protect.on} watermark={protect.watermark} email={user.email ?? ''}>{children}</CaptureGuard>
+    </ActivityTrackingProvider>
+  );
 }

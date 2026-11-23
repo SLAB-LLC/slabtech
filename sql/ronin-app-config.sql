@@ -24,7 +24,8 @@ WHERE name ILIKE 'fox pest control' OR name ILIKE 'ronin larsen';
 -- ============================================================================
 -- 2. App config: white background, navy ink, red accent, SLAB x RONIN in the top bar and on the
 --    opening splash, Ronin as the coach (his pixel portrait in the chat and nav), the Vault open from
---    the start (Marshall's and Rylan's days), the Library locked until it's filled, and the street
+--    the start (Marshall's and Rylan's days), the Library locked until it's filled, a skateboard ride
+--    to unlock at 2000 XP (Ronin skates), and the street
 --    running Ronin's own training once his videos are uploaded.
 -- ============================================================================
 INSERT INTO company_app_config (company_id, theme, features, labels)
@@ -63,7 +64,8 @@ SELECT c.id,
     "vaultUnlockXp": 0,
     "chatUnlockXp": 0,
     "library": false,
-    "monthlyPrize": false
+    "monthlyPrize": false,
+    "extraRides": ["skateboard"]
   }'::jsonb,
   '{}'::jsonb
 FROM companies c

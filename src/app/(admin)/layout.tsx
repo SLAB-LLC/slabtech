@@ -13,6 +13,7 @@ const NAV: [string, string][] = [
   ['/config', 'Config'],
   ['/purchase-inquiries', 'Inquiries'],
   ['/notifications', 'Notifications'],
+  ['/security', 'Security'],
 ]
 
 export default async function AdminLayout({
@@ -30,34 +31,25 @@ export default async function AdminLayout({
     redirect('/login')
   }
 
-  // Check if user is a super admin
+  // Only SLAB super admins get the admin pages. A missing profile is NOT treated as an admin
+  // (it used to be, so any signed-in account without a profile could open these pages).
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role, is_active, companies!inner(slug)')
+    .select('role, is_active, companies(slug)')
     .eq('id', user.id)
     .single()
 
-  // If no profile exists (legacy user), try to create one as super admin
   if (!profile) {
-    const { error: insertError } = await supabase.from('user_profiles').insert({
-      id: user.id,
-      email: user.email,
-      display_name: user.email,
-      role: 'super_admin', // Legacy users become super admins
-    })
-
-    // If insert fails (table doesn't exist yet), treat as super admin anyway
-    if (insertError) {
-      console.warn('Could not create user profile:', insertError.message)
-      // Continue as super admin - database migration may not be run yet
-    }
+    redirect('/login')
   } else if (!profile.is_active) {
     // User is disabled
     await supabase.auth.signOut()
     redirect('/login?error=account_disabled')
   } else if (profile.role !== 'super_admin') {
     // Non-super-admin users are redirected to their company dashboard
-    redirect(`/c/${profile.companies?.[0]?.slug}/dashboard`)
+    const company = profile.companies as unknown as { slug: string } | { slug: string }[] | null
+    const slug = Array.isArray(company) ? company[0]?.slug : company?.slug
+    redirect(slug ? `/c/${slug}/dashboard` : '/login')
   }
 
   return (

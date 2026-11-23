@@ -86,3 +86,22 @@ body {
     text-wrap: balance;
   }
 }
+
+/* CaptureGuard (prospect logins): no selecting, long-press saving or printing */
+html.capture-guard body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+html.capture-guard input,
+html.capture-guard textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+html.capture-guard img,
+html.capture-guard video {
+  -webkit-user-drag: none;
+}
+@media print {
+  html.capture-guard body { display: none !important; }
+}
