@@ -6,7 +6,7 @@ import { Container } from '@/components'
 
 const DEFAULT_PLATFORM_FEE = 300
 const AUDIO_DAY_FEE = 8
-const ACTIVE_REP_FEE = 5
+const DEFAULT_ACTIVE_REP_FEE = 5
 
 function formatDate(d: string) {
   return new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -67,7 +67,9 @@ export default async function CompanyBillingPage({
     activeReps = Math.max(current ?? 0, peakRow?.peak ?? 0)
   }
 
+  // platform_fee_cents is the monthly fee on the flat plan, the per-rep price on the per-rep plan
   const platformFee = company.platform_fee_cents != null ? company.platform_fee_cents / 100 : DEFAULT_PLATFORM_FEE
+  const activeRepFee = company.platform_fee_cents != null ? company.platform_fee_cents / 100 : DEFAULT_ACTIVE_REP_FEE
   const today = new Date().toISOString().slice(0, 10)
   const subscribed = !!company.stripe_subscription_id && company.billing_status !== 'cancelled'
   const freeUntil = company.billing_start_date && company.billing_start_date > today ? company.billing_start_date : null
@@ -114,7 +116,7 @@ export default async function CompanyBillingPage({
             <div className="rounded-lg border border-gray-200 bg-white p-5">
               <p className="text-sm text-gray-500">Active reps in {monthName}</p>
               <p className="mt-1 text-lg font-semibold text-gray-900">
-                {activeReps} &times; ${ACTIVE_REP_FEE} = ${activeReps * ACTIVE_REP_FEE}
+                {activeReps} &times; ${activeRepFee} = ${activeReps * activeRepFee}
               </p>
               <p className="text-xs text-gray-500">
                 {freeUntil ? `Free trial until ${formatDate(freeUntil)}` : 'Peak for the month, billed next month'}

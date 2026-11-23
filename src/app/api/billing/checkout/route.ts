@@ -32,14 +32,16 @@ export async function POST(request: NextRequest) {
     if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
     // Flat plan: platform fee ($300/mo, or the company's own deal in platform_price_id,
-    // e.g. ProTerra $50/mo). Per-rep plan: $5 per active rep, metered
+    // e.g. ProTerra $50/mo). Per-rep plan: a metered price per active rep, the company's
+    // own in platform_price_id (e.g. Prodigy $4) or STRIPE_PRICE_ACTIVE_REP ($5)
     // (sql/per-rep-billing-migration.sql). Both add the metered audio day price if set.
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
     if (company.billing_plan === 'per_rep') {
-      if (!process.env.STRIPE_PRICE_ACTIVE_REP) {
+      const repPrice = company.platform_price_id || process.env.STRIPE_PRICE_ACTIVE_REP
+      if (!repPrice) {
         return NextResponse.json({ error: 'Per-rep price is not set up yet' }, { status: 500 })
       }
-      lineItems.push({ price: process.env.STRIPE_PRICE_ACTIVE_REP })
+      lineItems.push({ price: repPrice })
     } else {
       const platformPrice = company.platform_price_id || process.env.STRIPE_PRICE_PLATFORM || 'price_...'
       lineItems.push({ price: platformPrice, quantity: 1 })
