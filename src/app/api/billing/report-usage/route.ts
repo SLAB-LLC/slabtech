@@ -6,7 +6,9 @@ export const maxDuration = 60
 
 // GET /api/billing/report-usage - Daily Vercel cron (vercel.json). Counts new billable
 // rep audio days (sql/stripe-usage-migration.sql) and sends each one to the Stripe
-// meter, so it lands on the company's next invoice. Safe to run any number of times.
+// meter, so it lands on the company's next invoice. For per-rep companies it also
+// sends this month's peak active rep count (sql/per-rep-billing-migration.sql).
+// Safe to run any number of times.
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
@@ -53,5 +55,42 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ counted, reported, failed: failed.length })
+  const activeReps = await reportActiveReps(service, stripe)
+
+  return NextResponse.json({ counted, reported, failed: failed.length, activeReps })
+}
+
+// Per-rep plan: send each company's peak active rep count for this month to the
+// "active_reps" meter (aggregation: Last), so the invoice bills peak x $5.
+// One event per company per day; Stripe ignores a repeat of the same identifier.
+async function reportActiveReps(
+  service: ReturnType<typeof createServiceRoleClient>,
+  stripe: ReturnType<typeof getStripe>,
+) {
+  const eventName = process.env.STRIPE_ACTIVE_REP_METER_EVENT || 'active_reps'
+  const { data, error } = await service.rpc('record_active_reps')
+  if (error) {
+    // Before sql/per-rep-billing-migration.sql is run the function doesn't exist yet
+    console.error('Counting active reps failed:', error)
+    return { reported: 0, failed: 0, error: true }
+  }
+
+  const today = new Date().toISOString().slice(0, 10)
+  let reported = 0
+  let failed = 0
+  for (const row of (data ?? []) as { company_id: string; stripe_customer_id: string | null; peak: number }[]) {
+    if (!row.stripe_customer_id) continue
+    try {
+      await stripe.billing.meterEvents.create({
+        event_name: eventName,
+        identifier: `active-reps-${row.company_id}-${today}`,
+        payload: { stripe_customer_id: row.stripe_customer_id, value: String(row.peak) },
+      })
+      reported++
+    } catch (err) {
+      console.error('Stripe active rep meter event failed:', row.company_id, err)
+      failed++
+    }
+  }
+  return { reported, failed }
 }

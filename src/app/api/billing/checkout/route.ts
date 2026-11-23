@@ -26,15 +26,26 @@ export async function POST(request: NextRequest) {
     const service = createServiceRoleClient()
     const { data: company } = await service
       .from('companies')
-      .select('*') // '*' so this still works before platform_price_id exists
+      .select('*') // '*' so this still works before billing_plan / platform_price_id exist
       .eq('id', companyId)
       .single()
     if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
 
-    // Platform fee (flat monthly) plus, if set, the metered per-rep audio day price.
-    // A company with its own deal (ProTerra: $50/mo) has companies.platform_price_id.
-    const platformPrice = company.platform_price_id || process.env.STRIPE_PRICE_PLATFORM || 'price_...'
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [{ price: platformPrice, quantity: 1 }]
+    // Flat plan: platform fee ($300/mo, or the company's own deal in platform_price_id,
+    // e.g. ProTerra $50/mo). Per-rep plan: a metered price per active rep, the company's
+    // own in platform_price_id (e.g. Prodigy $4) or STRIPE_PRICE_ACTIVE_REP ($5)
+    // (sql/per-rep-billing-migration.sql). Both add the metered audio day price if set.
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = []
+    if (company.billing_plan === 'per_rep') {
+      const repPrice = company.platform_price_id || process.env.STRIPE_PRICE_ACTIVE_REP
+      if (!repPrice) {
+        return NextResponse.json({ error: 'Per-rep price is not set up yet' }, { status: 500 })
+      }
+      lineItems.push({ price: repPrice })
+    } else {
+      const platformPrice = company.platform_price_id || process.env.STRIPE_PRICE_PLATFORM || 'price_...'
+      lineItems.push({ price: platformPrice, quantity: 1 })
+    }
     if (process.env.STRIPE_PRICE_AUDIO_DAY) lineItems.push({ price: process.env.STRIPE_PRICE_AUDIO_DAY })
 
     const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
