@@ -1,14 +1,18 @@
-import { createClient } from '@/utils/supabase/server'
+import type { ComponentProps } from 'react'
+import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import InviteAcceptForm from './InviteAcceptForm'
 
-export default async function InvitePage({ params }: { params: { token: string } }) {
-  const supabase = await createClient()
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+  // params is a Promise in Next 15+. The person opening this link isn't signed in, and
+  // company_invites RLS only lets owners read it, so look the token up server side with the
+  // service role (the token itself is the secret) and only pass the fields the form needs.
+  const { token } = await params
+  const supabase = createServiceRoleClient()
 
-  // Fetch invite with company details
   const { data: invite } = await supabase
     .from('company_invites')
-    .select('*, companies!inner(name, slug, logo_url, primary_color, secondary_color)')
-    .eq('token', params.token)
+    .select('id, token, email, role, expires_at, companies!inner(name, slug, logo_url, primary_color, secondary_color)')
+    .eq('token', token)
     .eq('accepted', false)
     .single()
 
@@ -43,5 +47,5 @@ export default async function InvitePage({ params }: { params: { token: string }
     )
   }
 
-  return <InviteAcceptForm invite={invite} />
+  return <InviteAcceptForm invite={invite as unknown as ComponentProps<typeof InviteAcceptForm>['invite']} />
 }
