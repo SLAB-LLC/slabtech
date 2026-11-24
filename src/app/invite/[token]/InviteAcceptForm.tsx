@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
-import { useRouter } from 'next/navigation'
+
+// Reps use SLAB on their phone, so a new account is sent to the app, not the website.
+const APP_STORE_URL = 'https://apps.apple.com/app/id6760921958'
 
 interface Invite {
   id: string
@@ -24,8 +25,7 @@ export default function InviteAcceptForm({ invite }: { invite: Invite }) {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const router = useRouter()
-  const supabase = createClient()
+  const [done, setDone] = useState(false)
 
   async function handleAccept(e: React.FormEvent) {
     e.preventDefault()
@@ -60,24 +60,52 @@ export default function InviteAcceptForm({ invite }: { invite: Invite }) {
         throw new Error(data.error || 'Failed to accept invite')
       }
 
-      // Sign in the new user
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: invite.email,
-        password,
-      })
-
-      if (signInError) {
-        throw signInError
-      }
-
-      // Redirect to company dashboard
-      router.push(`/c/${invite.companies.slug}/dashboard`)
-      router.refresh()
+      // Account is ready: send them to the app instead of the website
+      setDone(true)
+      setLoading(false)
     } catch (err) {
       console.error('Accept invite error:', err)
       setError(err instanceof Error ? err.message : 'Failed to accept invite')
       setLoading(false)
     }
+  }
+
+  if (done) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#000033] via-[#001199] to-[#0a1a5f] px-4">
+        <div
+          className="max-w-md w-full bg-[#001155]/80 rounded-lg p-8 border-2 backdrop-blur-sm text-center"
+          style={{ borderColor: invite.companies.primary_color }}
+        >
+          {invite.companies.logo_url && (
+            <div className="flex justify-center mb-4">
+              <img src={invite.companies.logo_url} alt={invite.companies.name} className="h-16 object-contain" />
+            </div>
+          )}
+          <h1 className="text-2xl font-bold mb-2" style={{ color: invite.companies.primary_color }}>
+            You&apos;re in!
+          </h1>
+          <p className="text-gray-300 mb-6">
+            Your {invite.companies.name} account is ready. Get the SLAB app and sign in with{' '}
+            <span className="font-semibold text-white">{invite.email}</span> and the password you just made.
+          </p>
+          <a
+            href={APP_STORE_URL}
+            className="block w-full py-3 rounded-md font-semibold hover:opacity-90"
+            style={{ backgroundColor: invite.companies.primary_color, color: '#000' }}
+          >
+            Download SLAB on the App Store
+          </a>
+          <p className="mt-3 text-sm text-gray-400">Already have the app? Just open it and sign in.</p>
+          <a
+            href={`/c/${invite.companies.slug}/login`}
+            className="mt-6 inline-block text-xs text-gray-500 underline"
+          >
+            Continue on the website instead
+          </a>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -106,7 +134,7 @@ export default function InviteAcceptForm({ invite }: { invite: Invite }) {
             Join {invite.companies.name}
           </h1>
           <p className="text-sm text-gray-300">
-            You've been invited to join as a <span className="font-semibold">{invite.role}</span>
+            You&apos;ve been invited to join as a <span className="font-semibold">{invite.role}</span>
           </p>
         </div>
 
