@@ -14,6 +14,7 @@ const NAV: [string, string][] = [
   ['/purchase-inquiries', 'Inquiries'],
   ['/notifications', 'Notifications'],
   ['/security', 'Security'],
+  ['/slot-orders', 'Slot Orders'],
 ]
 
 export default async function AdminLayout({
