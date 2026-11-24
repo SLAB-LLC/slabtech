@@ -5,7 +5,7 @@
 -- Spins are only earned, never bought:
 --   * Free Spin Saturday: one spin every Saturday (rep's time zone)
 --   * Milestones: a 5, 15 and 30 day streak, and each boss's first win
---   * Trading XP: 250 XP for a spin, up to 2 a week (both in slot_settings)
+--   * Trading XP: 100 XP for a spin, up to 2 a week (both in slot_settings)
 --
 -- Odds (slot_settings.odds, percent): miss 31, XP 33, boost 20, outfit 10,
 -- video 5, merch 1. The server rolls every spin; the app only animates it.
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS slot_settings (
   launched_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   odds JSONB NOT NULL DEFAULT '{"miss":31,"xp":33,"boost":20,"outfit":10,"video":5,"merch":1}'::jsonb,
   merch_monthly_cap INT NOT NULL DEFAULT 1,
-  xp_trade_cost INT NOT NULL DEFAULT 250,
+  xp_trade_cost INT NOT NULL DEFAULT 100,
   trades_per_week INT NOT NULL DEFAULT 2,
   boost_minutes INT NOT NULL DEFAULT 30,
   dupe_outfit_xp INT NOT NULL DEFAULT 100,
