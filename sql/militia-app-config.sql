@@ -9,6 +9,9 @@
 -- military copy, and the tabs Boot Camp / Intel / Comms / Ranks / Arsenal. SLAB's logo sits in steel gray next
 -- to theirs. Logo files are served by this site from public/brands/militia/.
 --
+-- The coach keeps Marshall's name and pitch moments but wears a soldier's face: public/brands/militia/coach-sheet.webp
+-- (4x2: idle, blink, two thinking frames with a hand to the chin, four talk frames), popping in and out like Marshall.
+--
 -- What the pilot reps get on day one: Marshall as their coach in Comms (his style and pitch moments, copied from
 -- Ace's Marshall), Marshall's and Rylan's days in Intel (the Vault, open from the start), Marshall's training
 -- videos, and the leaderboard. Boot Camp (the street) opens once Militia's own training is uploaded at
@@ -55,6 +58,11 @@ SELECT c.id,
       "tabBar": "#0A0B0D"
     },
     "gear": { "name": "Militia", "letters": "M", "primary": "#B4BBC3", "dark": "#1B1D22" },
+    "coach": {
+      "name": "Marshall",
+      "avatarUrl": "https://www.slabtraining.com/brands/militia/coach.png",
+      "spriteUrl": "https://www.slabtraining.com/brands/militia/coach-sheet.webp"
+    },
     "streetSign": { "street": "Militia Way", "cross": "Slab Ave" }
   }'::jsonb,
   '{
