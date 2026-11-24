@@ -59,6 +59,8 @@ export default async function CompanyLayout({
   const isCompanyAdmin = profile.role === 'company_admin'
   const isSuperAdmin = profile.role === 'super_admin'
   const protect = await getCaptureProtection(supabase, user.id, profile)
+  // Merch managers (sql/merch-managers.sql) get a link to the slot prize orders they fulfill
+  const { data: canManageMerch } = isSuperAdmin ? { data: false } : await supabase.rpc('can_manage_merch')
 
   return (
     <ActivityTrackingProvider>
@@ -108,6 +110,12 @@ export default async function CompanyLayout({
                 primaryColor={primaryColor}
                 secondaryColor={secondaryColor}
               />
+
+              {canManageMerch === true && (
+                <Link href="/slot-orders" className="text-sm font-medium text-steel-gray hover:text-success-gold">
+                  Slot Orders
+                </Link>
+              )}
 
               {/* User Info */}
               <span className="text-sm text-steel-gray">{user.email}</span>
