@@ -151,12 +151,12 @@ RETURNS JSONB LANGUAGE sql IMMUTABLE AS $$
   SELECT '{
     "xp":     {"50": 40, "100": 40, "150": 20},
     "boost":  {"xp2x": 40, "shield": 25, "charm": 20, "bonus": 15},
-    "outfit": {"hawaiian": 1, "suit": 1, "labcoat": 1, "hazmat": 1, "trout": 1, "neon": 1, "visor": 1},
+    "outfit": {"hawaiian": 1, "suit": 1, "labcoat": 1, "hazmat": 1, "trout": 1, "neon": 1, "visor": 1, "rainbow": 1},
     "merch":  {"snapback": 45, "stickers": 40, "sloodie": 15},
     "names": {
       "xp2x": "Double XP, 30 minutes", "shield": "Streak shield", "charm": "Lucky charm", "bonus": "Bonus spin",
-      "hawaiian": "Jackpot Hawaiian Shirt", "suit": "Black Suit + Black Tie", "labcoat": "Lab Coat + Goggles",
-      "hazmat": "Hazmat Suit", "trout": "Trout Bucket Hat", "neon": "Neon Beaker Chain", "visor": "777 Visor",
+      "hawaiian": "Jackpot Hawaiian Shirt", "suit": "Black Tux", "labcoat": "Lab Coat + Goggles",
+      "hazmat": "Hazmat Suit", "trout": "Trout Bucket Hat", "neon": "Neon Beaker Chain", "visor": "777 Visor", "rainbow": "Rainbow Glitter Fit",
       "zach": "Zach Kornfeld full pitch",
       "snapback": "SLAB Snapback", "stickers": "Specimen Sticker Pack + Hat", "sloodie": "The Sloodie"
     }
