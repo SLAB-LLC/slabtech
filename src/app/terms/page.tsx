@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Terms of Service | SLAB Voice',
-  description: 'Terms of Service for SLAB Voice — AI-powered sales call transcription and analytics.',
+  title: 'Terms of Service | SLAB',
+  description: 'Terms of Service for SLAB — AI-powered sales call transcription and analytics.',
 }
 
 export default function TermsOfService() {
@@ -11,7 +11,7 @@ export default function TermsOfService() {
       <h1>Terms of Service</h1>
       <p>Last updated: March 17, 2026</p>
       <p>
-        Please read these Terms of Service (&quot;Terms&quot;) carefully before using SLAB Voice
+        Please read these Terms of Service (&quot;Terms&quot;) carefully before using SLAB
         (&quot;the Service&quot;). By accessing or using the Service, you agree to be bound by these
         Terms. If you do not agree, do not use the Service. These Terms constitute a legally binding
         agreement between you and SLAB LLC (&quot;SLAB Training&quot;, &quot;We&quot;,
@@ -20,7 +20,7 @@ export default function TermsOfService() {
 
       <h2>1. Description of Service</h2>
       <p>
-        SLAB Voice is an AI-powered sales call transcription and analytics platform. The Service
+        SLAB is an AI-powered sales call transcription and analytics platform. The Service
         enables authorized users to record sales conversations, generate transcripts with automatic
         PII redaction, access training videos, and collaborate with their team through leaderboards,
         messaging, and performance insights.

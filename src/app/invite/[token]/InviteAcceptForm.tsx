@@ -202,7 +202,7 @@ export default function InviteAcceptForm({ invite }: { invite: Invite }) {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-500">
-          Powered by <span style={{ color: invite.companies.primary_color }}>SLAB Voice</span>
+          Powered by <span style={{ color: invite.companies.primary_color }}>SLAB</span>
         </p>
       </div>
     </div>

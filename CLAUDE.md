@@ -13,7 +13,7 @@ npm run lint     # Run ESLint
 
 ## Architecture Overview
 
-**Slab Voice** is a Next.js 15 application for voice transcription with PII redaction, using AssemblyAI for transcription and Supabase for database/auth/storage.
+**SLAB** (formerly "Slab Voice") is a Next.js 15 application for voice transcription with PII redaction, using AssemblyAI for transcription and Supabase for database/auth/storage.
 
 ### Tech Stack
 - Next.js 15 (App Router) + TypeScript

@@ -10,7 +10,7 @@ const vt323 = VT323({
 });
 
 export const metadata: Metadata = {
-  title: "Slab Voice",
+  title: "SLAB",
   description: "Voice transcription and PII redaction system",
   icons: {
     icon: '/favicon-32x32.png',

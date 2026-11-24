@@ -1,8 +1,8 @@
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Privacy Policy | SLAB Voice',
-  description: 'Privacy Policy for SLAB Voice — AI-powered sales call transcription and analytics.',
+  title: 'Privacy Policy | SLAB',
+  description: 'Privacy Policy for SLAB — AI-powered sales call transcription and analytics.',
 }
 
 export default function PrivacyPolicy() {
@@ -296,7 +296,7 @@ export default function PrivacyPolicy() {
 
       <h2>Related Policies</h2>
       <p>
-        For information about your rights and responsibilities when using SLAB Voice, please also
+        For information about your rights and responsibilities when using SLAB, please also
         review our <Link href="/terms">Terms of Service</Link>.
       </p>
 
