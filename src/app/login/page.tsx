@@ -110,7 +110,7 @@ export default function LoginPage() {
             Admin Login
           </h2>
           <p className="mt-2 text-sm" style={{ color: '#f39c12', opacity: 0.8 }}>
-            Sign in to access the Slab Voice admin panel
+            Sign in to access the SLAB admin panel
           </p>
         </div>
 

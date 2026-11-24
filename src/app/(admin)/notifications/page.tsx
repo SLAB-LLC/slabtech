@@ -90,7 +90,7 @@ export default function NotificationsPage() {
         body: 'A Big Five member just threw down a massive sales day. Check it out in the app!',
       }))
     } else if (form.category === 'updates') {
-      setForm((f) => ({ ...f, title: '✨ SLAB Voice Update', body: '' }))
+      setForm((f) => ({ ...f, title: '✨ SLAB Update', body: '' }))
     } else if (form.category === 'company_alerts') {
       setForm((f) => ({ ...f, title: '📢 Company Alert', body: '' }))
     }
@@ -464,7 +464,7 @@ export default function NotificationsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2 mb-0.5">
                     <span className="text-white text-xs font-semibold uppercase tracking-wide">
-                      SLAB Voice
+                      SLAB
                     </span>
                     <span className="text-white/50 text-xs">now</span>
                   </div>

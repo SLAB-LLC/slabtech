@@ -1,4 +1,4 @@
-# Slab Voice
+# SLAB
 
 A Next.js application for voice transcription with PII redaction using AssemblyAI and Supabase.
 
