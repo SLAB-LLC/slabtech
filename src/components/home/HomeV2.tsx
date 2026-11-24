@@ -651,7 +651,7 @@ export default function HomeV2() {
                 <h2 className="h2 reveal">We mic&apos;d up <em>Marshall Hawkes.</em></h2>
                 <p className="tapes-sub">
                   Instead of some soulless AI chatbot or semi-decent salesman, we wanted{' '}
-                  <b>the cream of the crop</b>. So we took <b>the previous record holder</b>, wired
+                  <b>the cream of the crop</b>. So we took <b>a record-setting top producer</b>, wired
                   him up, and recorded every opener, every objection, every close to get the best
                   possible training and models. The product changes from door to door.{' '}
                   <b>The pattern doesn&apos;t.</b>
