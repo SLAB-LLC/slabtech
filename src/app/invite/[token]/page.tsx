@@ -1,14 +1,20 @@
-import { createClient } from '@/utils/supabase/server'
+import { createServiceRoleClient } from '@/utils/supabase/service-role'
 import InviteAcceptForm from './InviteAcceptForm'
 
-export default async function InvitePage({ params }: { params: { token: string } }) {
-  const supabase = await createClient()
+export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+  // Next 15+ passes params as a Promise; reading params.token directly gives undefined.
+  const { token } = await params
+
+  // The person opening an invite is signed out, and RLS on company_invites only lets
+  // owners/admins read it, so look the token up server-side with the service role.
+  // Only the fields the accept form needs are selected.
+  const supabase = createServiceRoleClient()
 
   // Fetch invite with company details
   const { data: invite } = await supabase
     .from('company_invites')
-    .select('*, companies!inner(name, slug, logo_url, primary_color, secondary_color)')
-    .eq('token', params.token)
+    .select('id, token, email, role, expires_at, companies!inner(name, slug, logo_url, primary_color, secondary_color)')
+    .eq('token', token)
     .eq('accepted', false)
     .single()
 
@@ -43,5 +49,6 @@ export default async function InvitePage({ params }: { params: { token: string }
     )
   }
 
-  return <InviteAcceptForm invite={invite} />
+  // companies is a many-to-one join, so it comes back as one object at runtime
+  return <InviteAcceptForm invite={invite as unknown as Parameters<typeof InviteAcceptForm>[0]["invite"]} />
 }
