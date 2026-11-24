@@ -97,12 +97,6 @@ export default function InviteAcceptForm({ invite }: { invite: Invite }) {
             Download SLAB on the App Store
           </a>
           <p className="mt-3 text-sm text-gray-400">Already have the app? Just open it and sign in.</p>
-          <a
-            href={`/c/${invite.companies.slug}/login`}
-            className="mt-6 inline-block text-xs text-gray-500 underline"
-          >
-            Continue on the website instead
-          </a>
         </div>
       </div>
     )
