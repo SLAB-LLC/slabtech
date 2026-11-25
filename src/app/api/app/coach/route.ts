@@ -24,7 +24,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const maxDuration = 60
 
-const MODEL = 'claude-opus-5-5'
+// Haiku 5.5 held up against Opus 5.5 on a test of 16 real rep questions (slab-pipeline coach/eval),
+// at about 1/37th of the cost: ~$0.004 a question vs ~$0.16 on Opus
+const MODEL = 'claude-haiku-5-5'
 const MAX_MESSAGES = 30
 const MAX_CHARS = 4000
 const TOP = 4
