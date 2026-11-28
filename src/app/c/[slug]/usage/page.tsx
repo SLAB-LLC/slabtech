@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import { Container } from '@/components';
 import { UsageReport } from '@/components/usage/UsageReport';
 import { MonthlyReportDownload } from '@/components/usage/MonthlyReportDownload';
+import { NeverSignedIn } from '@/components/usage/NeverSignedIn';
 
 export default function CompanyUsagePage() {
   const params = useParams();
@@ -34,6 +35,7 @@ export default function CompanyUsagePage() {
           <p className="text-sm text-gray-600">Company not found.</p>
         ) : company ? (
           <>
+          <NeverSignedIn slug={slug} />
           <MonthlyReportDownload slug={slug} />
           <UsageReport companyId={company.id} userHref={id => `/c/${slug}/usage/${id}`} exportName={slug} />
           </>
