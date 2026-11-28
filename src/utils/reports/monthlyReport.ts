@@ -7,6 +7,10 @@
  */
 import { Resend } from 'resend'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import {
+  daysBetween, fetchUsageReport, perDay, summarize as summarizeTotals, totalsByUser, userStatus,
+  type Totals,
+} from '@/components/usage/usageData'
 
 export const REPORT_TZ = 'America/Denver'
 const DEFAULT_FROM = 'SLAB <noreply@slabtraining.com>'
@@ -42,6 +46,15 @@ export interface ReportInvite {
   expired: boolean
 }
 
+/** Same headline numbers as the Usage page, for the month and the month before. */
+export interface UsageSummary {
+  now: Totals
+  before: Totals
+  days: number
+  status: { active: number; slipping: number; inactive: number; never: number }
+  busiestDay: { day: string; activeUsers: number } | null
+}
+
 export interface MonthlyReport {
   company: { id: string; name: string; slug: string }
   start: string
@@ -49,6 +62,7 @@ export interface MonthlyReport {
   timezone: string
   users: ReportUser[]
   invites: ReportInvite[]
+  summary?: UsageSummary
 }
 
 /** A "YYYY-MM" month -> first and last day. */
@@ -80,7 +94,79 @@ export async function loadMonthlyReport(service: SupabaseClient, companyId: stri
   if (error) throw new Error(error.message)
   const report = data as MonthlyReport
   report.company.name = report.company.name.trim()
+  report.summary = await loadSummary(service, companyId, month)
   return report
+}
+
+/** Usage page numbers (get_usage_report) for a month vs the month before. SLAB staff (super admins) are left out. */
+async function loadSummary(service: SupabaseClient, companyId: string, month: string): Promise<UsageSummary> {
+  const { start, end } = monthRange(month)
+  const [y, m] = month.split('-').map(Number)
+  const prev = monthRange(m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, '0')}`)
+  const [cur, last] = await Promise.all([
+    fetchUsageReport(service, { start, end, timezone: REPORT_TZ, companyId }),
+    fetchUsageReport(service, { start: prev.start, end: prev.end, timezone: REPORT_TZ, companyId }),
+  ])
+  const users = cur.users.filter((u) => u.role !== 'super_admin')
+  const nowDays = daysBetween(start, end)
+  const prevDays = daysBetween(prev.start, prev.end)
+  const now = summarizeTotals(totalsByUser(users, cur.daily, new Set(nowDays)), nowDays.length)
+  const before = summarizeTotals(totalsByUser(users, last.daily, new Set(prevDays)), prevDays.length)
+
+  // Status as of the end of the month (same thresholds as the Usage page).
+  const asOf = Math.min(Date.now(), new Date(`${end}T23:59:59Z`).getTime())
+  const status = { active: 0, slipping: 0, inactive: 0, never: 0 }
+  for (const u of users) {
+    const seen = u.last_seen_ever && new Date(u.last_seen_ever).getTime() <= asOf ? u.last_seen_ever : null
+    status[userStatus(seen, asOf)] += 1
+  }
+
+  const busiest = perDay(cur.daily, nowDays, new Set(users.map((u) => u.id))).reduce<{ day: string; activeUsers: number } | null>(
+    (best, d) => (d.activeUsers > (best?.activeUsers ?? 0) ? { day: d.day, activeUsers: d.activeUsers } : best), null)
+  return { now, before, days: nowDays.length, status, busiestDay: busiest }
+}
+
+export function pctChange(now: number, before: number): string {
+  if (!before) return now ? 'new' : '–'
+  const p = Math.round(((now - before) / before) * 100)
+  return `${p > 0 ? '+' : ''}${p}%`
+}
+const durationLabel = (s: number) => {
+  const m = Math.round(s / 60)
+  return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${m % 60}m`
+}
+
+/** Label, this month, last month, change. */
+export function summaryRows(sum: UsageSummary): [string, string, string, string][] {
+  const { now, before } = sum
+  const per = (t: Totals) => (t.activeUsers ? durationLabel(t.activeSeconds / t.activeUsers) : '0m')
+  const adoption = (t: Totals) => (t.seats ? `${Math.round((t.activeUsers / t.seats) * 100)}%` : '0%')
+  const split = (t: Totals) => {
+    const all = t.webSeconds + t.appSeconds
+    return all ? `${Math.round((t.webSeconds / all) * 100)}% / ${Math.round((t.appSeconds / all) * 100)}%` : '–'
+  }
+  return [
+    ['Active users', `${now.activeUsers} of ${now.seats}`, `${before.activeUsers} of ${before.seats}`, pctChange(now.activeUsers, before.activeUsers)],
+    ['Adoption', adoption(now), adoption(before), ''],
+    ['Daily active (avg)', now.avgDailyActiveUsers.toFixed(1), before.avgDailyActiveUsers.toFixed(1), pctChange(now.avgDailyActiveUsers, before.avgDailyActiveUsers)],
+    ['Active user-days', String(now.activeUserDays), String(before.activeUserDays), pctChange(now.activeUserDays, before.activeUserDays)],
+    ['Engaged time', hours(now.activeSeconds) + ' h', hours(before.activeSeconds) + ' h', pctChange(now.activeSeconds, before.activeSeconds)],
+    ['Per active user', per(now), per(before), ''],
+    ['Listening time', hours(now.listeningSeconds) + ' h', hours(before.listeningSeconds) + ' h', pctChange(now.listeningSeconds, before.listeningSeconds)],
+    ['Training video time', hours(now.videoSeconds) + ' h', hours(before.videoSeconds) + ' h', pctChange(now.videoSeconds, before.videoSeconds)],
+    ['Transcripts opened', String(now.transcriptViews), String(before.transcriptViews), pctChange(now.transcriptViews, before.transcriptViews)],
+    ['Uploads', String(now.uploads), String(before.uploads), pctChange(now.uploads, before.uploads)],
+    ['Visits', String(now.visits), String(before.visits), pctChange(now.visits, before.visits)],
+    ['Web / app', split(now), split(before), ''],
+  ]
+}
+
+function extraSummaryRows(sum: UsageSummary): [string, string][] {
+  const st = sum.status
+  return [
+    ['Status at month end', `${st.active} active (3 days), ${st.slipping} slipping (4-10 days), ${st.inactive} inactive, ${st.never} never used`],
+    ['Busiest day', sum.busiestDay ? `${sum.busiestDay.day} (${sum.busiestDay.activeUsers} active)` : '–'],
+  ]
 }
 
 const day = (iso: string | null) =>
@@ -116,6 +202,16 @@ export function reportCsv(r: MonthlyReport): string {
   const { label } = monthRange(r.start.slice(0, 7))
   lines.push(csvLine([`${r.company.name} SLAB engagement report`, label, `Times in ${r.timezone}`]))
   lines.push('')
+  if (r.summary) {
+    lines.push(csvLine(['Summary', label, 'Previous month', 'Change']))
+    for (const row of summaryRows(r.summary)) lines.push(csvLine(row))
+    for (const row of extraSummaryRows(r.summary)) lines.push(csvLine(row))
+    lines.push(csvLine(['Members', r.users.length]))
+    lines.push(csvLine(['Never signed in', r.users.filter((u) => !u.last_sign_in).length]))
+    lines.push(csvLine(['Invitations not accepted', r.invites.length]))
+    lines.push('')
+  }
+  lines.push(csvLine(['People']))
   lines.push(csvLine([
     'Name', 'Email', 'Role', 'Status', 'Team', 'Manager', 'Joined', 'Last sign-in', 'Last active',
     'Hours this month', 'Listening minutes', 'Active days (2+ min)', 'XP this month', 'Total XP',
@@ -187,6 +283,15 @@ export async function emailMonthlyReport(r: MonthlyReport, to: string[]): Promis
   const html = `<div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;color:#111">
   <h2 style="margin:0 0 4px">${esc(r.company.name)} on SLAB: ${esc(label)}</h2>
   <p style="margin:0 0 16px;color:#555">Your monthly engagement report. The full report by rep, team and manager is attached as a CSV.</p>
+  ${r.summary ? `<h3 style="margin:0 0 6px;font-size:15px">Usage at a glance</h3>
+  <table style="border-collapse:collapse;font-size:14px;margin-bottom:18px">
+    <tr style="color:#888;font-size:12px"><td style="padding:4px 12px 4px 0"></td><td style="padding:4px 12px 4px 0">${esc(label)}</td><td style="padding:4px 12px 4px 0">Last month</td><td style="padding:4px 0">Change</td></tr>
+    ${summaryRows(r.summary).map(([k, a, b, c]) => `<tr><td style="padding:5px 12px 5px 0;color:#555">${esc(k)}</td><td style="padding:5px 12px 5px 0;font-weight:600">${esc(a)}</td><td style="padding:5px 12px 5px 0;color:#555">${esc(b)}</td><td style="padding:5px 0;color:${c.startsWith('+') || c === 'new' ? '#15803d' : c.startsWith('-') ? '#b91c1c' : '#555'}">${esc(c)}</td></tr>`).join('')}
+  </table>
+  <table style="border-collapse:collapse;font-size:14px;margin-bottom:18px">
+    ${extraSummaryRows(r.summary).map(([k, v]) => row(k, v)).join('')}
+  </table>` : ''}
+  <h3 style="margin:0 0 6px;font-size:15px">Team and training</h3>
   <table style="border-collapse:collapse;font-size:14px">
     ${row('Members', s.members)}
     ${row('Reps active this month', `${s.activeReps} of ${s.reps}`)}

@@ -38,6 +38,7 @@ BEGIN
     LEFT JOIN teams t ON t.id = up.team_id
     LEFT JOIN user_profiles m ON m.id = t.manager_id
     WHERE up.company_id = p_company_id
+      AND up.role IS DISTINCT FROM 'super_admin'  -- SLAB staff are not counted
   ),
   hb AS (
     SELECT h.user_id, h.heartbeat_at, h.activity_type,
@@ -145,3 +146,17 @@ ALTER TABLE companies ADD COLUMN IF NOT EXISTS monthly_report_to text;
 -- so the first email goes out 2027-01-01 with December.
 ALTER TABLE companies ADD COLUMN IF NOT EXISTS monthly_report_from date;
 UPDATE companies SET monthly_report_enabled = true, monthly_report_from = '2026-12-01' WHERE slug = 'ace';
+
+-- The monthly report also reuses get_usage_report (same numbers as the Usage page),
+-- so let the service role call it with no signed-in user. anon still gets 'Not authenticated'.
+DO $do$
+DECLARE d text;
+BEGIN
+  d := pg_get_functiondef('get_usage_report(date,date,text,uuid,uuid)'::regprocedure);
+  IF position('service_role' in d) > 0 THEN RETURN; END IF;
+  d := replace(d, 'IF auth.uid() IS NULL THEN', 'IF auth.uid() IS NULL AND COALESCE(auth.role(), '''') <> ''service_role'' THEN');
+  d := replace(d, 'IF v_role = ''super_admin'' THEN', 'IF v_role = ''super_admin'' OR (auth.uid() IS NULL AND auth.role() = ''service_role'') THEN');
+  EXECUTE d;
+END
+$do$;
+GRANT EXECUTE ON FUNCTION get_usage_report(date, date, text, uuid, uuid) TO service_role;
