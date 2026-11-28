@@ -15,6 +15,18 @@
     {
       "path": "/api/security/sweep",
       "schedule": "0 15 * * *"
+    },
+    {
+      "path": "/api/cron/monthly-usage-report",
+      "schedule": "0 15 1 * *"
+    },
+    {
+      "path": "/api/cron/month-end-push",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-manager-nudge",
+      "schedule": "0 15 * * 1"
     }
   ]
 }
